@@ -6,10 +6,10 @@ To use this package, start with:
 go get github.com/DavidSantia/react-redis-quiztool
 ```
 
-Next, you will need a CSV file containing youre quiz data.
+Next, you will need a CSV file containing your quiz data.
 
 #### Example
-A sample plant quiz is included.
+A sample plant quiz is included.  To use this:
 
 1. Make a directory for your project
 2. Save the file [plant-quiz.csv](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/plant-quiz.csv) into your directory
@@ -40,4 +40,4 @@ func main() {
 	os.Exit(1)
 }
 ```
-4. Run it:  **go run main.go**
+To run the above example, type:  **go run main.go**
