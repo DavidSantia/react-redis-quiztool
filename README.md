@@ -8,7 +8,7 @@ go get github.com/garyburd/redigo/redis
 ```
 As you can see above, it uses the [garyburd/redigo](https://github.com/garyburd/redigo) package, (c) Gary Burd
 
-This demo also assumes you have docker installed.
+This demo also assumes you have [Docker](https://www.docker.com/) installed.
 
 Next, you will need a CSV file containing your quiz data.
 
