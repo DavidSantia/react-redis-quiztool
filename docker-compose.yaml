@@ -1,0 +1,16 @@
+version: '2'
+services:
+  load:
+    image: react-redis-quiztool/load
+    container_name: rrq-load
+    build: ./load
+    environment:
+      REDIS_HOST: redis
+    volumes:
+      - ./data:/data
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:alpine
+    container_name: rrq-redis
