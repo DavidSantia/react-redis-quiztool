@@ -13,12 +13,15 @@ type QuizApp struct {
 	RedisConn redis.Conn
 }
 
+type Question map[string]string
+
 type Quiz struct {
-	Number  int
-	Title   string
-	Rows    int
-	Columns int
-	Map     []map[string]string
+	Number       int
+	Title        string
+	Rows         int
+	Columns      int
+	Categories   []string
+	CatQuestions [][]Question
 }
 
 func New(debug int) *QuizApp {

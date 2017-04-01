@@ -14,9 +14,9 @@ func (qzt *QuizApp) MapRecords() {
 		// Quiz Title is in First column of any record, use first
 		Title: qzt.Records[1][0],
 		// Quiz Rows does not include CSV header, so length(Records)-1
-		Rows: len(qzt.Records)-1,
+		Rows: len(qzt.Records) - 1,
 		// Quiz Columns does not include title, so Columns-1
-		Columns: qzt.Columns-1,
+		Columns: qzt.Columns - 1,
 	}
 
 	if qzt.Debug > 0 {
@@ -24,16 +24,44 @@ func (qzt *QuizApp) MapRecords() {
 	}
 
 	log.Printf("Records to process: %d\n", qzt.Quiz.Rows)
-	qzt.Quiz.Map = make([]map[string]string, qzt.Quiz.Rows)
+	qzt.Quiz.CatQuestions = make([][]Question, 1)
 
-	// Convert CSV array of strings to Map, for Quiz question data
-	for i := 0; i < qzt.Quiz.Rows; i++ {
-		qzt.Quiz.Map[i] = make(map[string]string)
+	// lookup for category list index
+	lookup_index := make(map[string]int)
+
+	// Compile list of Categories (start at 1 to skip CSV header)
+	for i := 1; i <= qzt.Quiz.Rows; i++ {
+		category := qzt.Records[i][1]
+
+		// Did we find a new category?
+		_, exist := lookup_index[category]
+		if !exist {
+			index := len(qzt.Quiz.Categories)
+			lookup_index[category] = index
+
+			// Compiling list of distinct categories
+			qzt.Quiz.Categories = append(qzt.Quiz.Categories, category)
+		}
+	}
+
+	// Initialize array of questions for each category
+	qzt.Quiz.CatQuestions = make([][]Question, len(qzt.Quiz.Categories))
+
+	// Map Quiz question data and store by Category
+	for i := 1; i <= qzt.Quiz.Rows; i++ {
+		category := qzt.Records[i][1]
+		question := make(Question)
+
+		// Convert Quiz question data to Map
 		for j := 1; j <= qzt.Quiz.Columns; j++ {
-			// Add non-null data to Map
-			if len(qzt.Records[i+1][j]) != 0 {
-				qzt.Quiz.Map[i][qzt.Records[0][j]] = qzt.Records[i+1][j]
+			if len(qzt.Records[i][j]) != 0 {
+				// Add non-null data to Map
+				question[qzt.Records[0][j]] = qzt.Records[i][j]
 			}
 		}
+
+		// Insert Question by category
+		index := lookup_index[category]
+		qzt.Quiz.CatQuestions[index] = append(qzt.Quiz.CatQuestions[index], question)
 	}
 }
