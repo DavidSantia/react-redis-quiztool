@@ -1,0 +1,30 @@
+{
+  "name": "react-redis-quiztool",
+  "repository": "github.com/DavidSantia/react-redis-quiztool",
+  "version": "1.0.0",
+  "description": "React Quiz demo using Go-lang and Redis",
+  "main": "index.js",
+  "scripts": {
+    "start": "node node_modules/webpack-dev-server/bin/webpack-dev-server.js --port=3000"
+  },
+  "author": "Santia",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "react": "^0.14.7",
+    "react-dom": "^0.14.7"
+  },
+  "devDependencies": {
+    "babel-core": "^6.5.1",
+    "babel-loader": "^6.2.2",
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-stage-1": "^6.5.0",
+    "babel-preset-react": "^6.5.0",
+    "webpack": "^1.12.13",
+    "webpack-dev-server": "^1.14.0"
+  },
+  "keywords": [
+    "React",
+    "Golang",
+    "Redis"
+  ]
+}

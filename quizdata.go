@@ -1,8 +1,19 @@
 package quiztool
 
 import (
+	"net"
+
 	"github.com/garyburd/redigo/redis"
 )
+
+type Wrapper struct {
+	Debug     bool
+	Command   string
+	KeyPair   bool
+	Buf       []byte
+	BufPtr    int
+	BufLen    int
+}
 
 type QuizApp struct {
 	Debug     int
@@ -11,14 +22,19 @@ type QuizApp struct {
 	Records   [][]string
 	Quiz      *Quiz
 	RedisConn redis.Conn
+	RedisSock net.Conn
+	RedisWrap *Wrapper
 }
 
+type Question map[string]string
+
 type Quiz struct {
-	Number  int
-	Title   string
-	Rows    int
-	Columns int
-	Map     []map[string]string
+	Number       int
+	Title        string
+	Rows         int
+	Columns      int
+	Categories   []string
+	CatQuestions [][]Question
 }
 
 func New(debug int) *QuizApp {

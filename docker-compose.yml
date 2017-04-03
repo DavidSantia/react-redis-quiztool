@@ -14,3 +14,5 @@ services:
   redis:
     image: redis:alpine
     container_name: rrq-redis
+    ports:
+     - "6379:6379"
