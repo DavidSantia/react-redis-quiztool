@@ -2,35 +2,10 @@ package quiztool
 
 import (
 	"log"
-	"os"
-
 	"fmt"
+
 	"github.com/garyburd/redigo/redis"
 )
-
-func (qzt *QuizApp) ConnectDatastore() (err error) {
-
-	host := os.Getenv("REDIS_HOST")
-	if len(host) == 0 {
-		host = "localhost"
-	}
-	port := os.Getenv("REDIS_PORT")
-	if len(port) == 0 {
-		port = "6379"
-	}
-	server := host + ":" + port
-
-	if qzt.Debug > 0 {
-		log.Printf("DEBUG Connecting to Redis server at %s\n", server)
-	}
-
-	qzt.RedisConn, err = redis.Dial("tcp", server)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (qzt *QuizApp) StoreQuiz() (err error) {
 

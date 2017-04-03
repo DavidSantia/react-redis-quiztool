@@ -1,6 +1,8 @@
 package quiztool
 
 import (
+	"net"
+
 	"github.com/garyburd/redigo/redis"
 )
 
@@ -11,6 +13,10 @@ type QuizApp struct {
 	Records   [][]string
 	Quiz      *Quiz
 	RedisConn redis.Conn
+	RedisSock net.Conn
+	Buf       []byte
+	BufPtr    int
+	BufLen    int
 }
 
 type Question map[string]string
