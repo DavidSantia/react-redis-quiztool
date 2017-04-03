@@ -9,7 +9,7 @@ func (qzt *QuizApp) WriteSocket(cmd, data string) (err error) {
 	qzt.RedisWrap.Command = cmd
 	command := cmd + " " + data
 	if qzt.Debug > 0 {
-		log.Printf("Sending command: %s\n", command)
+		log.Printf("DEBUG Sending command: %s\n", command)
 	}
 
 	var n int
@@ -31,7 +31,7 @@ func (qzt *QuizApp) WriteSocket(cmd, data string) (err error) {
 func (qzt *QuizApp) ReadSocket() (data string, err error) {
 	wrp := qzt.RedisWrap
 	if qzt.Debug > 0 {
-		log.Printf("Reading result\n")
+		log.Printf("DEBUG Reading result\n")
 	}
 
 	// Read socket

@@ -9,7 +9,7 @@ import (
 
 func (wrp *Wrapper) NextLF() (bool) {
 	if wrp.Debug {
-		log.Printf("Doing NextLF: BufPtr = %d BufLen = %d\n", wrp.BufPtr, wrp.BufLen)
+		log.Printf("VERBOSE Doing NextLF: BufPtr = %d BufLen = %d\n", wrp.BufPtr, wrp.BufLen)
 	}
 
 	// find next LF
@@ -33,7 +33,7 @@ func (wrp *Wrapper) NextLF() (bool) {
 
 func (wrp *Wrapper) GetBulkString() (s string, err error) {
 	if wrp.Debug {
-		log.Printf("GetBulkString processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
+		log.Printf("VERBOSE GetBulkString processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
 	}
 
 	// Locate size
@@ -50,7 +50,7 @@ func (wrp *Wrapper) GetBulkString() (s string, err error) {
 	}
 
 	if wrp.Debug {
-		log.Printf("GetBulkString expected length %d\n", l)
+		log.Printf("VERBOSE GetBulkString expected length %d\n", l)
 	}
 
 	// Locate value
@@ -68,14 +68,14 @@ func (wrp *Wrapper) GetBulkString() (s string, err error) {
 	}
 	s = fmt.Sprintf("%q", wrp.Buf[i:wrp.BufPtr-2])
 	if wrp.Debug {
-		log.Printf("GetBulkString returned: %s\n", s)
+		log.Printf("VERBOSE GetBulkString returned: %s\n", s)
 	}
 	return
 }
 
 func (wrp *Wrapper) ParseBuf() (s string, err error) {
 	if wrp.Debug {
-		log.Printf("ParseBuf processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
+		log.Printf("VERBOSE ParseBuf processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
 	}
 
 	resp_type := wrp.Buf[wrp.BufPtr]
@@ -98,14 +98,14 @@ func (wrp *Wrapper) ParseBuf() (s string, err error) {
 	}
 
 	if wrp.Debug {
-		log.Printf("ParseBuf returned: %s\n", s)
+		log.Printf("VERBOSE ParseBuf returned: %s\n", s)
 	}
 	return
 }
 
 func (wrp *Wrapper) GetArray() (s string, err error) {
 	if wrp.Debug {
-		log.Printf("GetArray processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
+		log.Printf("VERBOSE GetArray processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
 	}
 
 	// Locate size
@@ -122,7 +122,7 @@ func (wrp *Wrapper) GetArray() (s string, err error) {
 	}
 
 	if wrp.Debug {
-		log.Printf("GetArray expected length %d\n", l)
+		log.Printf("VERBOSE GetArray expected length %d\n", l)
 	}
 
 	// Iterate through values
@@ -155,7 +155,7 @@ func (wrp *Wrapper) GetArray() (s string, err error) {
 	// Drop trailing ','
 	s = data[:len(data)-1] + "]"
 	if wrp.Debug {
-		log.Printf("GetArray returned: %s\n", s)
+		log.Printf("VERBOSE GetArray returned: %s\n", s)
 	}
 	return
 }
@@ -170,7 +170,7 @@ func (wrp *Wrapper) ParseSocket() (data string, err error) {
 
 	// Check for Redis error
 	if resp_type == '-' {
-		err = fmt.Errorf("Redis protocol: %s", wrp.Buf[1:wrp.BufLen])
+		err = fmt.Errorf("Redis protocol: %s", wrp.Buf[1:wrp.BufLen-2])
 		return
 	}
 
