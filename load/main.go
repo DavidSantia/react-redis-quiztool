@@ -13,10 +13,10 @@ func main() {
 	var debug int = 0
 	qzt := rrq.New(debug)
 
-	err := qzt.ConnectDatastore()
+	err := qzt.ConnectMain()
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 	defer qzt.RedisConn.Close()
 
@@ -24,7 +24,7 @@ func main() {
 	err = qzt.Parse(filename)
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	qzt.MapRecords()
@@ -32,7 +32,7 @@ func main() {
 	err = qzt.StoreQuiz()
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
-		os.Exit(0)
+		os.Exit(1)
 	}
-	os.Exit(1)
+	os.Exit(0)
 }
