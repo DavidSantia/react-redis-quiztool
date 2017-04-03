@@ -37,7 +37,11 @@ func (qzt *QuizApp) ConnectLight() (err error) {
 		return err
 	}
 
-	qzt.Buf = make([]byte, 8192)
+	qzt.RedisWrap = &Wrapper{
+		Buf: make([]byte, 8192),
+		Debug: qzt.Debug > 1,
+	}
+
 	return
 }
 

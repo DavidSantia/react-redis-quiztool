@@ -7,106 +7,121 @@ import (
 	"strings"
 )
 
-func (qzt *QuizApp) NextLF() (bool) {
-	if qzt.Debug > 1 {
-		log.Printf("Doing NextLF: BufPtr = %d BufLen = %d\n", qzt.BufPtr, qzt.BufLen)
+func (wrp *Wrapper) NextLF() (bool) {
+	if wrp.Debug {
+		log.Printf("Doing NextLF: BufPtr = %d BufLen = %d\n", wrp.BufPtr, wrp.BufLen)
 	}
 
 	// find next LF
 	for {
-		if qzt.BufPtr == qzt.BufLen - 1 {
+		if wrp.BufPtr == wrp.BufLen - 1 {
 			return false
 		}
-		if qzt.Buf[qzt.BufPtr] == '\r' && qzt.Buf[qzt.BufPtr+1] == '\n' {
-			qzt.BufPtr++
-			if qzt.BufPtr < qzt.BufLen {
-				qzt.BufPtr++
+		if wrp.Buf[wrp.BufPtr] == '\r' && wrp.Buf[wrp.BufPtr+1] == '\n' {
+			wrp.BufPtr++
+			if wrp.BufPtr < wrp.BufLen {
+				wrp.BufPtr++
 			}
-			if qzt.Debug > 1 {
-				log.Printf("NextLF returned BufPtr=%d\n", qzt.BufPtr)
+			if wrp.Debug {
+				log.Printf("NextLF returned BufPtr=%d\n", wrp.BufPtr)
 			}
 			return true
 		}
-		qzt.BufPtr++
+		wrp.BufPtr++
 	}
 }
 
-func (qzt *QuizApp) GetBulkString() (s string, err error) {
-	if qzt.Debug > 1 {
-		log.Printf("GetBulkString processing: %q\n", qzt.Buf[qzt.BufPtr:qzt.BufLen])
+func (wrp *Wrapper) GetBulkString() (s string, err error) {
+	if wrp.Debug {
+		log.Printf("GetBulkString processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
 	}
 
 	// Locate size
-	i := qzt.BufPtr
-	if !qzt.NextLF() {
-		err = fmt.Errorf("Bulk string size EOLN not found: %s", qzt.Buf[qzt.BufPtr:qzt.BufLen-2])
+	i := wrp.BufPtr
+	if !wrp.NextLF() {
+		err = fmt.Errorf("Bulk string size EOLN not found: %s", wrp.Buf[wrp.BufPtr:wrp.BufLen-2])
 		return
 	}
-	l, err := strconv.Atoi(string(qzt.Buf[i+1:qzt.BufPtr-2]))
-	if qzt.Debug > 1 {
+	l, err := strconv.Atoi(string(wrp.Buf[i+1:wrp.BufPtr-2]))
+	if l == -1 {
+		err = fmt.Errorf("%s Bulk string not found", wrp.Command)
+		s = "null"
+		return
+	}
+
+	if wrp.Debug {
 		log.Printf("GetBulkString expected length %d\n", l)
 	}
 
 	// Locate value
-	i = qzt.BufPtr
-	if !qzt.NextLF() {
-		err = fmt.Errorf("Bulk string value EOLN not found: %s", qzt.Buf[qzt.BufPtr:qzt.BufLen-2])
+	i = wrp.BufPtr
+	if !wrp.NextLF() {
+		err = fmt.Errorf("Bulk string value EOLN not found: %s", wrp.Buf[wrp.BufPtr:wrp.BufLen-2])
 		return
 	}
 
 	// Make sure Bulk String length matches RESP size value
-	if l != qzt.BufPtr - i - 2 {
+	if l != wrp.BufPtr - i - 2 {
 		err = fmt.Errorf("Expected length %d != actual length %d for Bulk string %s",
-			l, qzt.BufPtr - i, qzt.Buf[i:qzt.BufPtr-2])
+			l, wrp.BufPtr - i, wrp.Buf[i:wrp.BufPtr-2])
 		return
 	}
-	s = fmt.Sprintf("%q", qzt.Buf[i:qzt.BufPtr-2])
-	if qzt.Debug > 1 {
+	s = fmt.Sprintf("%q", wrp.Buf[i:wrp.BufPtr-2])
+	if wrp.Debug {
 		log.Printf("GetBulkString returned: %s\n", s)
 	}
 	return
 }
 
-func (qzt *QuizApp) ParseBuf() (s string, err error) {
-	if qzt.Debug > 1 {
-		log.Printf("ParseBuf processing: %q\n", qzt.Buf[qzt.BufPtr:qzt.BufLen])
+func (wrp *Wrapper) ParseBuf() (s string, err error) {
+	if wrp.Debug {
+		log.Printf("ParseBuf processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
 	}
 
-	resp_type := qzt.Buf[qzt.BufPtr]
+	resp_type := wrp.Buf[wrp.BufPtr]
 
 	if resp_type == '+' {
 		// Simple string
-		s = fmt.Sprintf("%q", qzt.Buf[qzt.BufPtr+1:qzt.BufLen-2])
+		s = fmt.Sprintf("%q", wrp.Buf[wrp.BufPtr+1:wrp.BufLen-2])
 	} else if resp_type == ':' {
 		// Integer
-		s = fmt.Sprintf("%s", qzt.Buf[qzt.BufPtr+1:qzt.BufLen-2])
+		s = fmt.Sprintf("%s", wrp.Buf[wrp.BufPtr+1:wrp.BufLen-2])
 	} else if resp_type == '$' {
 		// Bulk string
-		s, err = qzt.GetBulkString()
+		s, err = wrp.GetBulkString()
+		if err != nil {
+			return
+		}
 	} else {
-		err = fmt.Errorf("Unrecognized response data: %s", qzt.Buf[qzt.BufPtr+1:qzt.BufLen-2])
+		err = fmt.Errorf("Unrecognized response data: %s", wrp.Buf[wrp.BufPtr+1:wrp.BufLen-2])
 		return
 	}
 
-	if qzt.Debug > 1 {
+	if wrp.Debug {
 		log.Printf("ParseBuf returned: %s\n", s)
 	}
 	return
 }
 
-func (qzt *QuizApp) GetArray() (s string, err error) {
-	if qzt.Debug > 1 {
-		log.Printf("GetArray processing: %q\n", qzt.Buf[qzt.BufPtr:qzt.BufLen])
+func (wrp *Wrapper) GetArray() (s string, err error) {
+	if wrp.Debug {
+		log.Printf("GetArray processing: %q\n", wrp.Buf[wrp.BufPtr:wrp.BufLen])
 	}
 
 	// Locate size
-	i := qzt.BufPtr
-	if !qzt.NextLF() {
-		err = fmt.Errorf("Array EOLN not found: %s", qzt.Buf[qzt.BufPtr:qzt.BufLen])
+	i := wrp.BufPtr
+	if !wrp.NextLF() {
+		err = fmt.Errorf("Array EOLN not found: %s", wrp.Buf[wrp.BufPtr:wrp.BufLen])
 		return
 	}
-	l, err := strconv.Atoi(string(qzt.Buf[i+1:qzt.BufPtr-2]))
-	if qzt.Debug > 1 {
+	l, err := strconv.Atoi(string(wrp.Buf[i+1:wrp.BufPtr-2]))
+	if l == -1 {
+		err = fmt.Errorf("%s Array not found", wrp.Command)
+		s = "null"
+		return
+	}
+
+	if wrp.Debug {
 		log.Printf("GetArray expected length %d\n", l)
 	}
 
@@ -116,57 +131,56 @@ func (qzt *QuizApp) GetArray() (s string, err error) {
 
 	for a := 0; a < l; a++ {
 		// Make sure there are more entries to parse
-		if qzt.BufPtr == qzt.BufLen {
+		if wrp.BufPtr == wrp.BufLen {
 			err = fmt.Errorf("Array expected length %d != actual length %d", l, a+1)
 			return
 		}
+		elem, err = wrp.ParseBuf()
 
-		// Form { elem1 : elem2 }, ...
-		elem, err = qzt.ParseBuf()
-		if a % 2 == 0 {
-			arr[a] = "{" + elem + ":"
+		if wrp.KeyPair {
+			// Form { elem1 : elem2 }, ...
+			if a % 2 == 0 {
+				arr[a] = "{" + elem + ":"
+			} else {
+				arr[a] = elem + "},"
+			}
 		} else {
-			arr[a] = elem + "},"
+			arr[a] = elem + ","
 		}
+
 	}
 
 	// Join array of values
 	data := "[" + strings.Join(arr, "")
 	// Drop trailing ','
 	s = data[:len(data)-1] + "]"
-	if qzt.Debug > 1 {
+	if wrp.Debug {
 		log.Printf("GetArray returned: %s\n", s)
 	}
 	return
 }
 
-func (qzt *QuizApp) ParseSocket() (data string, err error) {
-	// Read socket
-	qzt.BufLen, err = qzt.RedisSock.Read(qzt.Buf)
-	if err != nil {
-		return
-	}
-	if qzt.BufLen == 0 {
-		err = fmt.Errorf("Empty read from Redis socket")
-		return
-	}
+func (wrp *Wrapper) ParseSocket() (data string, err error) {
 
-	qzt.BufPtr = 0
-	resp_type := qzt.Buf[0]
+	wrp.BufPtr = 0
+	resp_type := wrp.Buf[0]
+
+	// Array data is list if HMGET
+	wrp.KeyPair = wrp.Command != "HMGET"
 
 	// Check for Redis error
 	if resp_type == '-' {
-		err = fmt.Errorf("Redis protocol: %s", qzt.Buf[1:qzt.BufLen])
+		err = fmt.Errorf("Redis protocol: %s", wrp.Buf[1:wrp.BufLen])
 		return
 	}
 
 	// Check for Array
 	if resp_type == '*' {
-		data, err = qzt.GetArray()
+		data, err = wrp.GetArray()
 		return
 	}
 
 	// Check for Simple string, Integer or Bulk string
-	data, err = qzt.ParseBuf()
+	data, err = wrp.ParseBuf()
 	return
 }

@@ -6,6 +6,15 @@ import (
 	"github.com/garyburd/redigo/redis"
 )
 
+type Wrapper struct {
+	Debug     bool
+	Command   string
+	KeyPair   bool
+	Buf       []byte
+	BufPtr    int
+	BufLen    int
+}
+
 type QuizApp struct {
 	Debug     int
 	Filename  string
@@ -14,9 +23,7 @@ type QuizApp struct {
 	Quiz      *Quiz
 	RedisConn redis.Conn
 	RedisSock net.Conn
-	Buf       []byte
-	BufPtr    int
-	BufLen    int
+	RedisWrap *Wrapper
 }
 
 type Question map[string]string
