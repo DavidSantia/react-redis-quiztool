@@ -18,6 +18,7 @@ func (wsclient *WSClient) Respond() {
 		data, err := wsclient.ReadRedis()
 		if err != nil {
 			msg = WSMessage{Command: "error", Data: fmt.Sprintf("%q", err.Error())}
+			log.Printf("<redis: %s>\n", err.Error())
 		} else {
 			msg = WSMessage{Command: "success", Data: data}
 		}

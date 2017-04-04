@@ -42,7 +42,9 @@ func (wsclient *WSClient) ReadRedis() (data string, err error) {
 
 	data, err = wsclient.redisWrap.ParseSocket()
 	if err != nil {
-		log.Printf("Error from Redis: %v\n", err)
+		if wsclient.redisWrap.Debug {
+			log.Printf("VERBOSE Error from Redis: %v\n", err)
+		}
 		return
 	}
 
