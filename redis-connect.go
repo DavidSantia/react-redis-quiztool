@@ -3,43 +3,76 @@ package quiztool
 import (
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/garyburd/redigo/redis"
 )
 
-func getServer() (server string) {
-	var host, port string
+func getServer() (redisHostPort, wsHostPort string) {
+	var redisHost, redisPort, wsHost, wsPort string
 
-	host = os.Getenv("REDIS_HOST")
-	if len(host) == 0 {
-		host = "localhost"
+	redisHost = os.Getenv("REDIS_HOST")
+	if len(redisHost) == 0 {
+		redisHost = "localhost"
 	}
-	port = os.Getenv("REDIS_PORT")
-	if len(port) == 0 {
-		port = "6379"
+	redisPort = os.Getenv("REDIS_PORT")
+	if len(redisPort) == 0 {
+		redisPort = "6379"
 	}
 
-	return host + ":" + port
+	wsHost = os.Getenv("WEBSOCKET_HOST")
+	if len(wsHost) == 0 {
+		wsHost = "localhost"
+	}
+	wsPort = os.Getenv("WEBSOCKET_PORT")
+	if len(wsPort) == 0 {
+		wsPort = "4000"
+	}
+
+	redisHostPort = redisHost + ":" + redisPort
+	wsHostPort = wsHost + ":" +wsPort
+	return
 }
 
 // Connect using socket only
-func (qzt *QuizApp) ConnectLight() (err error) {
+func (qzt *QuizApp) ConnectSockets() (err error) {
 
-	server := getServer()
+	redisHostPort, wsHostPort := getServer()
+	if qzt.Debug > 0 {
+		log.Printf("DEBUG Connecting to Redis server at %s\n", redisHostPort)
+	}
+
+	qzt.wsclient = &WSClient{
+		wshost:    wsHostPort,
+		router:    make(map[string]Handler),
+		redisWrap: &Wrapper{
+			Debug: qzt.Debug > 1,
+			buf:   make([]byte, 8192),
+		},
+		active:    false,
+	}
+	qzt.wsclient.AddRoutes()
+
+	// Connect to Redis on TCP port
+	qzt.wsclient.redisSock, err = net.Dial("tcp", redisHostPort)
+	if err != nil {
+		log.Printf("Redis Socket error: %v\n", err)
+		return
+	}
+
+	// When HTTP port accessed, upgrade to Websocket
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		serveWs(qzt.wsclient, w, r)
+	})
 
 	if qzt.Debug > 0 {
-		log.Printf("DEBUG Connecting to Redis server at %s\n", server)
+		log.Printf("DEBUG Initiating ListenAndServe at %s\n", wsHostPort)
 	}
-
-	qzt.RedisSock, err = net.Dial("tcp", server)
+	err = http.ListenAndServe(wsHostPort, nil)
 	if err != nil {
-		return err
-	}
-
-	qzt.RedisWrap = &Wrapper{
-		Buf: make([]byte, 8192),
-		Debug: qzt.Debug > 1,
+		log.Printf("WebSocket %q error: %v\n", wsHostPort, err)
+		return
 	}
 
 	return
@@ -48,13 +81,12 @@ func (qzt *QuizApp) ConnectLight() (err error) {
 // Connect using Redis package
 func (qzt *QuizApp) ConnectMain() (err error) {
 
-	server := getServer()
-
+	redisHostPort, _ := getServer()
 	if qzt.Debug > 0 {
-		log.Printf("DEBUG Connecting to Redis server at %s\n", server)
+		log.Printf("DEBUG Connecting to Redis server at %s\n", redisHostPort)
 	}
 
-	qzt.RedisConn, err = redis.Dial("tcp", server)
+	qzt.redisConn, err = redis.Dial("tcp", redisHostPort)
 	if err != nil {
 		return err
 	}

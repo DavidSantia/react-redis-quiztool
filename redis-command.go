@@ -5,19 +5,20 @@ import (
 	"log"
 )
 
-func (qzt *QuizApp) WriteSocket(cmd, data string) (err error) {
-	qzt.RedisWrap.Command = cmd
+func (wsclient *WSClient) WriteRedis(cmd, data string) (err error) {
+	wsclient.redisWrap.Command = cmd
 	command := cmd + " " + data
-	if qzt.Debug > 0 {
-		log.Printf("DEBUG Sending command: %s\n", command)
+	if wsclient.redisWrap.Debug {
+		log.Printf("VERBOSE Sending command: %s\n", command)
 	}
 
 	var n int
 	b := []byte(command + "\r\n")
 
 	// Write socket
-	n, err = qzt.RedisSock.Write(b)
+	n, err = wsclient.redisSock.Write(b)
 	if err != nil {
+		log.Printf("Error writing Redis socket: %v\n", err)
 		return
 	}
 	if n != len(b) {
@@ -28,22 +29,26 @@ func (qzt *QuizApp) WriteSocket(cmd, data string) (err error) {
 	return
 }
 
-func (qzt *QuizApp) ReadSocket() (data string, err error) {
-	wrp := qzt.RedisWrap
-	if qzt.Debug > 0 {
-		log.Printf("DEBUG Reading result\n")
-	}
+func (wsclient *WSClient) ReadRedis() (data string, err error) {
 
 	// Read socket
-	wrp.BufLen, err = qzt.RedisSock.Read(wrp.Buf)
+	wsclient.redisWrap.bufLen, err = wsclient.redisSock.Read(wsclient.redisWrap.buf)
 	if err != nil {
 		return
 	}
-	if wrp.BufLen == 0 {
+	if wsclient.redisWrap.bufLen == 0 {
 		err = fmt.Errorf("Empty read from Redis socket")
 		return
 	}
 
-    data, err = wrp.ParseSocket()
-    return
+	data, err = wsclient.redisWrap.ParseSocket()
+	if err != nil {
+		log.Printf("Error reading from Redis socket: %v\n", err)
+		return
+	}
+
+	if wsclient.redisWrap.Debug {
+		log.Printf("VERBOSE Receiving Redis result: %s\n", data)
+	}
+	return
 }

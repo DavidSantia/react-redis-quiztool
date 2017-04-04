@@ -1,3 +1,4 @@
 .idea
 load/load
-quiztool/node_modules
+redis-ws/redis-ws
+quiz/node_modules

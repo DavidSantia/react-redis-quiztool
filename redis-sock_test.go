@@ -27,7 +27,7 @@ func TestCommandsThatFail(t *testing.T) {
 	var cmd, data string
 
 	cmd = "HGET"
-	data = "quiz:1 titlen" 
+	data = "quiz:1 titlen"
 	err = qzt.WriteSocket(cmd, data)
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
@@ -67,7 +67,7 @@ func TestCommandsThatPass(t *testing.T) {
 	var cmd, data string
 
 	cmd = "HGET"
-	data = "quiz:1 title" 
+	data = "quiz:1 title"
 	err = qzt.WriteSocket(cmd, data)
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
@@ -106,7 +106,7 @@ func TestCommandsThatPass(t *testing.T) {
 	}
 
 	cmd = "HMGET"
-	data = "quiz:1 title junk categories" 
+	data = "quiz:1 title junk categories"
 	err = qzt.WriteSocket(cmd, data)
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
