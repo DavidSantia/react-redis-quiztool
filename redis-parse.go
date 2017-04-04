@@ -23,7 +23,7 @@ func (wrp *Wrapper) NextLF() bool {
 				wrp.bufPtr++
 			}
 			if wrp.Debug {
-				log.Printf("NextLF returned bufPtr=%d\n", wrp.bufPtr)
+				log.Printf("VERBOSE NextLF returned bufPtr=%d\n", wrp.bufPtr)
 			}
 			return true
 		}
@@ -44,7 +44,7 @@ func (wrp *Wrapper) GetBulkString() (s string, err error) {
 	}
 	l, err := strconv.Atoi(string(wrp.buf[i+1 : wrp.bufPtr-2]))
 	if l == -1 {
-		err = fmt.Errorf("%s Bulk string not found", wrp.Command)
+		err = fmt.Errorf("%s Bulk string not found", wrp.msg.Command)
 		s = "null"
 		return
 	}
@@ -66,6 +66,8 @@ func (wrp *Wrapper) GetBulkString() (s string, err error) {
 			l, wrp.bufPtr-i, wrp.buf[i:wrp.bufPtr-2])
 		return
 	}
+
+	// Convert to JSON (string will be in "")
 	s = fmt.Sprintf("%q", wrp.buf[i:wrp.bufPtr-2])
 	if wrp.Debug {
 		log.Printf("VERBOSE GetBulkString returned: %s\n", s)
@@ -81,10 +83,10 @@ func (wrp *Wrapper) ParseBuf() (s string, err error) {
 	resp_type := wrp.buf[wrp.bufPtr]
 
 	if resp_type == '+' {
-		// Simple string
+		// Simple string, convert to JSON (string will be in "")
 		s = fmt.Sprintf("%q", wrp.buf[wrp.bufPtr+1:wrp.bufLen-2])
 	} else if resp_type == ':' {
-		// Integer
+		// Integer, convert to JSON (string)
 		s = fmt.Sprintf("%s", wrp.buf[wrp.bufPtr+1:wrp.bufLen-2])
 	} else if resp_type == '$' {
 		// Bulk string
@@ -116,7 +118,7 @@ func (wrp *Wrapper) GetArray() (s string, err error) {
 	}
 	l, err := strconv.Atoi(string(wrp.buf[i+1 : wrp.bufPtr-2]))
 	if l == -1 {
-		err = fmt.Errorf("%s Array not found", wrp.Command)
+		err = fmt.Errorf("%s Array not found", wrp.msg.Command)
 		s = "null"
 		return
 	}
@@ -166,11 +168,11 @@ func (wrp *Wrapper) ParseSocket() (data string, err error) {
 	resp_type := wrp.buf[0]
 
 	// Array data is list if HMGET
-	wrp.keyPair = wrp.Command != "HMGET"
+	wrp.keyPair = wrp.msg.Command != "HMGET"
 
 	// Check for Redis error
 	if resp_type == '-' {
-		err = fmt.Errorf("Redis protocol: %s", wrp.buf[1:wrp.bufLen-2])
+		err = fmt.Errorf("%s", wrp.buf[1:wrp.bufLen-2])
 		return
 	}
 

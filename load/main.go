@@ -13,7 +13,7 @@ func main() {
 	var debug int = 0
 	qzt := rrq.New(debug)
 
-	err := qzt.ConnectMain()
+	err := qzt.ConnectRedis()
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 		os.Exit(1)

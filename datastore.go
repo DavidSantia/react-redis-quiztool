@@ -14,7 +14,7 @@ func (qzt *QuizApp) StoreQuiz() (err error) {
 		qtag, qzt.Quiz.Title, qzt.Quiz.Rows, qzt.Quiz.Columns, len(qzt.Quiz.Categories))
 
 	// Store quiz information
-	_, err = qzt.redisConn.Do("HMSET", qtag, "title", qzt.Quiz.Title,
+	_, err = qzt.RedisConn.Do("HMSET", qtag, "title", qzt.Quiz.Title,
 		"questions", qzt.Quiz.Rows, "categories", len(qzt.Quiz.Categories))
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (qzt *QuizApp) StoreQuiz() (err error) {
 		log.Printf("Storing category %d: %s, %d questions\n",
 			i+1, category, len(qzt.Quiz.CatQuestions[i]))
 
-		_, err = qzt.redisConn.Do("HMSET", ctag, "category", category,
+		_, err = qzt.RedisConn.Do("HMSET", ctag, "category", category,
 			"questions", len(qzt.Quiz.CatQuestions[i]))
 		if err != nil {
 			return err
@@ -37,7 +37,7 @@ func (qzt *QuizApp) StoreQuiz() (err error) {
 			if qzt.Debug > 0 {
 				log.Printf("DEBUG Store %#v\n", redis.Args{qqtag}.AddFlat(question))
 			}
-			_, err = qzt.redisConn.Do("HMSET", redis.Args{qqtag}.AddFlat(question)...)
+			_, err = qzt.RedisConn.Do("HMSET", redis.Args{qqtag}.AddFlat(question)...)
 			if err != nil {
 				return err
 			}

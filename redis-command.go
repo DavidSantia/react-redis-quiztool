@@ -5,20 +5,19 @@ import (
 	"log"
 )
 
-func (wsclient *WSClient) WriteRedis(cmd, data string) (err error) {
-	wsclient.redisWrap.Command = cmd
-	command := cmd + " " + data
+func (wsclient *WSClient) WriteRedis() (err error) {
+	var n int
+	command := wsclient.redisWrap.msg.Command + " " + wsclient.redisWrap.msg.Data
+	b := []byte(command + "\r\n")
+
 	if wsclient.redisWrap.Debug {
 		log.Printf("VERBOSE Sending command: %s\n", command)
 	}
 
-	var n int
-	b := []byte(command + "\r\n")
-
 	// Write socket
 	n, err = wsclient.redisSock.Write(b)
 	if err != nil {
-		log.Printf("Error writing Redis socket: %v\n", err)
+		log.Printf("Error writing Redis: %v\n", err)
 		return
 	}
 	if n != len(b) {
@@ -43,7 +42,7 @@ func (wsclient *WSClient) ReadRedis() (data string, err error) {
 
 	data, err = wsclient.redisWrap.ParseSocket()
 	if err != nil {
-		log.Printf("Error reading from Redis socket: %v\n", err)
+		log.Printf("Error from Redis: %v\n", err)
 		return
 	}
 

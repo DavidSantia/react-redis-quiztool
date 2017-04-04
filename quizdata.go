@@ -7,33 +7,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-type Handler func(*WSClient, WSRedisCommand)
-
 type WSClient struct {
 	SessionId string
 	wshost    string
 	socket    *websocket.Conn
-	send      chan WSMessage
-	stop      chan bool
-	active    bool
-	router    map[string]Handler
 	redisWrap *Wrapper
 	redisSock net.Conn
 }
 
-type WSRedisCommand struct {
-	Command string  `json:"command"`
-	Args    string  `json:"args"`
-}
-
 type WSMessage struct {
-	Command string         `json:"command"`
-	Data    WSRedisCommand `json:"data"`
+	Command string `json:"command"`
+	Data    string `json:"data"`
 }
 
 type Wrapper struct {
 	Debug   bool
-	Command string
+	msg     WSMessage
 	keyPair bool
 	buf     []byte
 	bufPtr  int
@@ -46,7 +35,7 @@ type QuizApp struct {
 	Columns   int
 	Records   [][]string
 	Quiz      *Quiz
-	redisConn redis.Conn
+	RedisConn redis.Conn
 	wsclient  *WSClient
 }
 

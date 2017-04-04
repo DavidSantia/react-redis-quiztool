@@ -35,24 +35,21 @@ func getServer() (redisHostPort, wsHostPort string) {
 	return
 }
 
-// Connect using socket only
-func (qzt *QuizApp) ConnectSockets() (err error) {
+// Connect to Redis using socket
+func (qzt *QuizApp) ConnectRedisSocket() (err error) {
 
 	redisHostPort, wsHostPort := getServer()
 	if qzt.Debug > 0 {
-		log.Printf("DEBUG Connecting to Redis server at %s\n", redisHostPort)
+		log.Printf("DEBUG Connecting to Redis socket at %s\n", redisHostPort)
 	}
 
 	qzt.wsclient = &WSClient{
 		wshost:    wsHostPort,
-		router:    make(map[string]Handler),
 		redisWrap: &Wrapper{
 			Debug: qzt.Debug > 1,
 			buf:   make([]byte, 8192),
 		},
-		active:    false,
 	}
-	qzt.wsclient.AddRoutes()
 
 	// Connect to Redis on TCP port
 	qzt.wsclient.redisSock, err = net.Dial("tcp", redisHostPort)
@@ -60,33 +57,44 @@ func (qzt *QuizApp) ConnectSockets() (err error) {
 		log.Printf("Redis Socket error: %v\n", err)
 		return
 	}
+	return
+}
 
-	// When HTTP port accessed, upgrade to Websocket
+// Initiate Websocket for messaging Redis
+func (qzt *QuizApp) InitiateRedisWebocket() (err error) {
+
+	if qzt.wsclient == nil {
+		log.Printf("Need to call ConnectRedisSocket() first\n")
+		return
+	}
+
+	// Handler that upgrades to websocket
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		serveWs(qzt.wsclient, w, r)
 	})
 
 	if qzt.Debug > 0 {
-		log.Printf("DEBUG Initiating ListenAndServe at %s\n", wsHostPort)
-	}
-	err = http.ListenAndServe(wsHostPort, nil)
-	if err != nil {
-		log.Printf("WebSocket %q error: %v\n", wsHostPort, err)
-		return
+		log.Printf("DEBUG Initiating ListenAndServe for websocket messaging at %s\n", qzt.wsclient.wshost)
 	}
 
+	// Listen and Serve HTTP (upgrades to websocket)
+	err = http.ListenAndServe(qzt.wsclient.wshost, nil)
+	if err != nil {
+		log.Printf("WebSocket %q error: %v\n", qzt.wsclient.wshost, err)
+		return
+	}
 	return
 }
 
 // Connect using Redis package
-func (qzt *QuizApp) ConnectMain() (err error) {
+func (qzt *QuizApp) ConnectRedis() (err error) {
 
 	redisHostPort, _ := getServer()
 	if qzt.Debug > 0 {
 		log.Printf("DEBUG Connecting to Redis server at %s\n", redisHostPort)
 	}
 
-	qzt.redisConn, err = redis.Dial("tcp", redisHostPort)
+	qzt.RedisConn, err = redis.Dial("tcp", redisHostPort)
 	if err != nil {
 		return err
 	}
