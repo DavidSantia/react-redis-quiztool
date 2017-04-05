@@ -33,7 +33,7 @@ func (wsclient *WSClient) WriteWS(msg WSMessage) {
 	}
 
 	// Create JSON format (msg.Data is already JSON)
-	b := []byte(fmt.Sprintf("{command: %q, data: %s}", msg.Command, msg.Data))
+	b := []byte(fmt.Sprintf("{\"command\":%q,\"data\":%s}", msg.Command, msg.Data))
 
 	if err := wsclient.socket.WriteMessage(websocket.TextMessage, b); err != nil {
 		log.Printf("<websocket: write error %v>\n", err)

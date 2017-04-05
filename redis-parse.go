@@ -142,9 +142,9 @@ func (wrp *Wrapper) GetArray() (s string, err error) {
 		if wrp.keyPair {
 			// Form { elem1 : elem2 }, ...
 			if a%2 == 0 {
-				arr[a] = "{" + elem + ":"
+				arr[a] = elem + ":"
 			} else {
-				arr[a] = elem + "},"
+				arr[a] = elem + ","
 			}
 		} else {
 			arr[a] = elem + ","
@@ -152,10 +152,20 @@ func (wrp *Wrapper) GetArray() (s string, err error) {
 
 	}
 
-	// Join array of values
-	data := "[" + strings.Join(arr, "")
+	// Join array of key-pairs, or values
+	var data string
+	if wrp.keyPair {
+		data = "{"
+	} else {
+		data = "["
+	}
+	data = data + strings.Join(arr, "")
 	// Drop trailing ','
-	s = data[:len(data)-1] + "]"
+	if wrp.keyPair {
+		s = data[:len(data)-1] + "}"
+	} else {
+		s = data[:len(data)-1] + "]"
+	}
 	if wrp.Debug {
 		log.Printf("VERBOSE GetArray returned: %s\n", s)
 	}
