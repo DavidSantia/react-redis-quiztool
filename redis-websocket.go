@@ -1,11 +1,12 @@
 package quiztool
 
 import (
+	"fmt"
+	"io"
 	"log"
 	"net/http"
 
 	"github.com/gorilla/websocket"
-	"fmt"
 )
 
 func (wsclient *WSClient) Respond() {
@@ -84,6 +85,7 @@ func serveWs(wsclient *WSClient, w http.ResponseWriter, r *http.Request) {
 
 	wsclient.socket, err = upgrader.Upgrade(w, r, nil)
 	if err != nil {
+		io.WriteString(w, "Protocol error: Please use Websocket to connect\n")
 		log.Printf("<failed upgrade %v>\n", err)
 		return
 	}
