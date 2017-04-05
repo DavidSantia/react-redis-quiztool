@@ -5,23 +5,29 @@ To use this Quiz Tool demo, start with:
 ```sh
 go get github.com/DavidSantia/react-redis-quiztool
 go get github.com/garyburd/redigo/redis
+go get github.com/gorilla/websocket
 ```
-As you can see above, it uses the [garyburd/redigo](https://github.com/garyburd/redigo) package, (c) Gary Burd
+As you can see above, it uses
 
-This demo also assumes you have [Docker](https://www.docker.com/) installed.
+* [garyburd/redigo](https://github.com/garyburd/redigo) package, (c) Gary Burd
+* [gorilla/websocket](https://github.com/gorilla/websocket) package, (c) Gorillatoolkit.org
 
-Next, you will need a CSV file containing your quiz data.
+This demo also assumes you have [Docker](https://www.docker.com/) installed, and uses
 
-## Developing your own Loader
-A sample plant quiz CSV is included.  To develop your own loader app:
+* Docker hub [Redis](https://hub.docker.com/_/redis) container, (c) Redis.io
 
-1. Make a directory for your project
-2. Use the [plant-quiz.csv](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/plant-quiz.csv) as an example for how to format your quiz.
-3. Create a main.go that calls New, ConnectDatastore, Parse, MapRecords, and StoreQuiz.
+## Architecture
 
+I wanted to create a simple React/JS app that presents a quiz.  I also wanted to serve the data from Redis, and keep things simple and fast by connecting Redis directly to the browser.
+
+When I first researched this, I found various NodeJS modules that interface with Redis; however, these are all server side implementations. Since Redis uses a TCP socket, browsers don't let you interface directly. Security concerns have kept TCP sockets out of browsers. (Although Chrome does have a socket library, the keep things secure by only allowing it in packaged apps, where address restrictions can be specified in their manifest.)
+
+So I created a light-weight adaptor ([redis-ws/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/redis-ws/main.go)) to copy onto the Redis container, providing a websocket interface.
+
+![Figure 1: Architecture](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/README-Architecture.png)
 
 ## How to Run the example load app
-An example Load app that stores the CSV data in Redis is provided: [load/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/load/main.go)
+An example Load app ([load/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/load/main.go)) that stores the CSV data in Redis is provided.
 
 ### Running locally
 To run this app, first you need to launch a Redis container.  The following maps the port Redis uses to localhost:
@@ -40,7 +46,7 @@ Next we will run the whole system in Docker. To do this, first stop the currentl
 ```sh
 ./build.sh
 ```
-This script builds the Go executable, and deploys it in a container with **docker-compose build**
+This script builds the two Go executables, and deploys them onto their containers with **docker-compose build**
 
 ## Launching the whole system
 
@@ -48,7 +54,17 @@ Finally, bring up the system:
 ```sh
 docker-compose up
 ```
-This launches the Redis server as a dependency to the load app.
+This launches
 
-It also mounts the [data](https://github.com/DavidSantia/react-redis-quiztool/blob/master/data) directory on the container, so that the app can access the CSV files.
+1. The Redis server (with websocket adaptor) container, as a dependency to the load app
+2. The Load app container
+
+It also mounts the [data](https://github.com/DavidSantia/react-redis-quiztool/blob/master/data) directory on the Load container, so that the app can access the CSV files.
+
+## Developing your own Loader
+A sample plant quiz CSV is included.  To develop your own loader app, start with a CSV file containing your quiz data.
+
+1. Make a directory for your project
+2. Use the [plant-quiz.csv](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/plant-quiz.csv) as an example for how to format your quiz.
+3. Create a main.go that calls New, ConnectDatastore, Parse, MapRecords, and StoreQuiz.
 
