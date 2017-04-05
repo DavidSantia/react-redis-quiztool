@@ -1,28 +1,67 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import Socket from './socket';
+
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      title: "My Quiz",
-      questions: 4,
-      categories: 2,
-      quizdata: {},
-      connected: false
+      quizId: 1,
+      title: "",
+      questions: 0,
+      categories: 0,
+      quizData: {},
+      connected: false,
+      showModal: false
     };
   }
 
   // This section communicates handles the Redis connection
   componentDidMount() {
-    // Connect to Redis
-    var Redis = require("ioredis");
-    var redis = new Redis();
+    let socket = this.socket = new Socket();
 
-    redis.get('quiz:1 title', function (err, result) {
-        console.log("Got", reply);
-    });
+    // Route Redis responses
+    socket.on("success", (data) => this.onSuccess(data));
+    socket.on("error", (data) => this.onError(data));
+
+    // Route internal actions
+    socket.on("connect", () => this.onConnect());
+    socket.on("disconnect", () => this.onDisconnect());
   }
+
+  onConnect() {
+    console.log("Connecting to Redis server");
+    this.socket.send("PING", null);
+  }
+  onDisconnect() {
+    console.log("Connection closed");
+    this.setState({connected: false});
+  }
+
+  gotConnected() {
+    console.log("Redis server Ready");
+    this.setState({connected: true});
+
+    this.socket.send("HGETALL", "quiz:" + this.state.quizId);
+  }
+
+  onSuccess(data) {
+    if (data == "PONG") {
+      // Server replied to PING, so is ready
+      this.gotConnected();
+    } else if (data.title != null) {
+      // Server replied to HGETALL for quiz meta-data, so set in state
+      this.setState(data)
+    } else {
+      console.log("Got Reply: ", data);
+    }
+  }
+  
+  onError(data) {
+    console.log("Got Error:", data);
+  }
+
 
   render() {
     return (
@@ -38,6 +77,5 @@ class App extends Component {
     );
   }
 }
-
 
 ReactDOM.render(<App />, document.getElementById('root'));
