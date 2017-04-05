@@ -1,8 +1,8 @@
 package quiztool
 
 import (
-	"log"
 	"fmt"
+	"log"
 
 	"github.com/garyburd/redigo/redis"
 )

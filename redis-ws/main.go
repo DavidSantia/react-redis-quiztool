@@ -10,29 +10,20 @@ import (
 func main() {
 
 	// debug: 0 = off, 1 = on, 2 = verbose
-	var debug int = 0
+	var debug int = 1
 	qzt := rrq.New(debug)
 
-	err := qzt.ConnectRedis()
-	if err != nil {
-		fmt.Printf("Error %v\n", err)
-		os.Exit(1)
-	}
-	defer qzt.RedisConn.Close()
-
-	var filename string = "data/plant-quiz.csv"
-	err = qzt.Parse(filename)
+	err := qzt.ConnectRedisSocket()
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 		os.Exit(1)
 	}
 
-	qzt.MapRecords()
-
-	err = qzt.StoreQuiz()
+	err = qzt.InitiateRedisWebocket()
 	if err != nil {
 		fmt.Printf("Error %v\n", err)
 		os.Exit(1)
 	}
+
 	os.Exit(0)
 }

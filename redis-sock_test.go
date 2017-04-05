@@ -15,8 +15,8 @@ func TestConnect(t *testing.T) {
 	var debug int = 1
 	qzt = New(debug)
 
-	// Passing Test
-	err = qzt.ConnectLight()
+	// Connect Test
+	err = qzt.ConnectRedisSocket()
 	if err != nil {
 		t.Errorf("Expected new quiztool, got: %v\n", err)
 	}
@@ -24,16 +24,19 @@ func TestConnect(t *testing.T) {
 
 func TestCommandsThatFail(t *testing.T) {
 	var err error
-	var cmd, data string
+	var data string
+	wsc := qzt.wsclient
 
-	cmd = "HGET"
-	data = "quiz:1 titlen" 
-	err = qzt.WriteSocket(cmd, data)
+	// Tests the returned errors
+
+	wsc.redisWrap.msg.Command = "HGET"
+	wsc.redisWrap.msg.Data = "quiz:1 titlen"
+	err = wsc.WriteRedis()
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
 	}
 
-	data, err = qzt.ReadSocket()
+	data, err = wsc.ReadRedis()
 	if err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			log.Printf("Got expected error result: %q\n", err)
@@ -44,13 +47,13 @@ func TestCommandsThatFail(t *testing.T) {
 		t.Errorf("Expected not found error, got result: %s\n", data)
 	}
 
-	cmd = "BLAH"
-	data = ""
-	err = qzt.WriteSocket(cmd, data)
+	wsc.redisWrap.msg.Command = "BLAH"
+	wsc.redisWrap.msg.Data = ""
+	err = wsc.WriteRedis()
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
 	}
-	data, err = qzt.ReadSocket()
+	data, err = wsc.ReadRedis()
 	if err != nil {
 		if strings.Contains(err.Error(), "unknown command") {
 			log.Printf("Got expected error result: %q\n", err)
@@ -64,16 +67,19 @@ func TestCommandsThatFail(t *testing.T) {
 
 func TestCommandsThatPass(t *testing.T) {
 	var err error
-	var cmd, data string
+	var data string
+	wsc := qzt.wsclient
 
-	cmd = "HGET"
-	data = "quiz:1 title" 
-	err = qzt.WriteSocket(cmd, data)
+	// Passing Tests
+
+	wsc.redisWrap.msg.Command = "HGET"
+	wsc.redisWrap.msg.Data = "quiz:1 title"
+	err = wsc.WriteRedis()
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
 	}
 
-	data, err = qzt.ReadSocket()
+	data, err = wsc.ReadRedis()
 	if err != nil {
 		t.Errorf("Expected successful read, got result: %s\n", data)
 	} else {
@@ -84,14 +90,14 @@ func TestCommandsThatPass(t *testing.T) {
 		}
 	}
 
-	cmd = "HGETALL"
-	data = "quiz:1"
-	err = qzt.WriteSocket(cmd, data)
+	wsc.redisWrap.msg.Command = "HGETALL"
+	wsc.redisWrap.msg.Data = "quiz:1"
+	err = wsc.WriteRedis()
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
 	}
 
-	data, err = qzt.ReadSocket()
+	data, err = wsc.ReadRedis()
 	if err != nil {
 		log.Printf("Error: %v\n", err)
 	}
@@ -105,14 +111,14 @@ func TestCommandsThatPass(t *testing.T) {
 		}
 	}
 
-	cmd = "HMGET"
-	data = "quiz:1 title junk categories" 
-	err = qzt.WriteSocket(cmd, data)
+	wsc.redisWrap.msg.Command = "HMGET"
+	wsc.redisWrap.msg.Data = "quiz:1 title junk categories"
+	err = wsc.WriteRedis()
 	if err != nil {
 		t.Errorf("Expected successful write, got: %v\n", err)
 	}
 
-	data, err = qzt.ReadSocket()
+	data, err = wsc.ReadRedis()
 	if err != nil {
 		t.Errorf("Expected successful read, got result: %s\n", data)
 	} else {

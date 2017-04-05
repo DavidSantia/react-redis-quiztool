@@ -4,15 +4,29 @@ import (
 	"net"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/gorilla/websocket"
 )
 
+type WSClient struct {
+	SessionId string
+	wshost    string
+	socket    *websocket.Conn
+	redisWrap *Wrapper
+	redisSock net.Conn
+}
+
+type WSMessage struct {
+	Command string `json:"command"`
+	Data    string `json:"data"`
+}
+
 type Wrapper struct {
-	Debug     bool
-	Command   string
-	KeyPair   bool
-	Buf       []byte
-	BufPtr    int
-	BufLen    int
+	Debug   bool
+	msg     WSMessage
+	keyPair bool
+	buf     []byte
+	bufPtr  int
+	bufLen  int
 }
 
 type QuizApp struct {
@@ -22,8 +36,7 @@ type QuizApp struct {
 	Records   [][]string
 	Quiz      *Quiz
 	RedisConn redis.Conn
-	RedisSock net.Conn
-	RedisWrap *Wrapper
+	wsclient  *WSClient
 }
 
 type Question map[string]string
@@ -42,5 +55,8 @@ func New(debug int) *QuizApp {
 	// Set to number of fields in CSV header
 	const columns = 11
 
-	return &QuizApp{Debug: debug, Columns: columns}
+	return &QuizApp{
+		Debug:   debug,
+		Columns: columns,
+	}
 }
