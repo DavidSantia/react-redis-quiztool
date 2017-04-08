@@ -71,6 +71,7 @@ class App extends Component {
             <h2>{this.state.title}</h2>
             <p>Categories: {this.state.categories}</p>
             <p>Questions: {this.state.questions}</p>
+            <img src="/images/connected.png" />
           </div>
         </div>
       </div>
