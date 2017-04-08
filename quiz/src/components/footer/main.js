@@ -12,8 +12,8 @@ class Footer extends Component {
     }
     return (
       <div className="footer navbar-default navbar-fixed-bottom">
-        <div className="container-fluid">
-	        <Image src={img_src} height="24" width="24" thumbnail />
+        <div className="container-fluid footer-container">
+	        <Image src={img_src} height="24" width="24" rounded />
           {text} Connected to Server
         </div>
       </div>);

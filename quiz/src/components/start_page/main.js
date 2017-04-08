@@ -21,7 +21,7 @@ class StartPage extends Component {
             <li><strong>Categories</strong>: {categories}</li>
             <li><strong>Questions</strong>: {questions}</li>
           </ul>
-          <Button bsStyle="primary" disabled={disable} onclick={startQuiz}>Begin</Button>
+          <Button bsStyle="primary" disabled={disable} onClick={startQuiz}>Begin</Button>
         </Panel>
       );
     }
