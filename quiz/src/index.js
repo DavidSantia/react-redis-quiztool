@@ -13,6 +13,7 @@ class App extends Component {
       connected: false,
       ready: false,
       began: false,
+      done: false,
       quizId: 1,
       title: "",
       categories: "",
@@ -67,7 +68,10 @@ class App extends Component {
   }
 
   getQuestionNumber() {
-    let {ready, currentQ, questions} = this.state;
+    let {ready, currentQ, questions, done} = this.state;
+    if (done) {
+      return "Finished Quiz";
+    }
     if (currentQ > 0 && parseInt(questions, 10) > 0 && ready) {
       return "Question " + String(currentQ) + " of " + questions;
     }
@@ -76,14 +80,18 @@ class App extends Component {
   submitAnswer(answer) {
     let q = this.state.currentQ;
     q = q + 1;
-    if (q < parseInt(this.state.questions, 10)) {
+    if (q <= parseInt(this.state.questions, 10)) {
       this.setState({currentQ: q});
+    } else {
+      this.setState({done: true});
+      console.log("Done with quiz");
+      return;
     }
     console.log("Submitted answer: ", answer);
   }
 
   render() {
-    let {title, connected, ready, began} = this.state;
+    let {title, connected, ready, began, currentQ} = this.state;
     // Set header and footer
     let header = title + " Quiz";
     let footer_text = this.getQuestionNumber();

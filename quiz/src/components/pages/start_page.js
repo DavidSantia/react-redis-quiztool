@@ -6,8 +6,7 @@ class StartPage extends Component {
   onBegin(event) {
     event.preventDefault();
     let {setAppState} = this.props;
-    
-    setAppState({began: true});
+    setAppState({began: true, currentQ: 1});
     console.log("Start button pressed");
   }
   

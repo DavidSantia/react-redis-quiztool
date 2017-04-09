@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Panel, Button, Radio} from 'react-bootstrap';
+import {Panel, Button, Image} from 'react-bootstrap';
 
 class QuestionPage extends Component {
   constructor(props) {
@@ -7,12 +7,14 @@ class QuestionPage extends Component {
     this.state = {
       answer: "",
       selected: false,
+      toggle: true,
       data: [
         {name: "q1", value: "Apple"},
         {name: "q2", value: "Orange"},
         {name: "q3", value: "Watermelon"}
       ]
     }
+    console.log("Questions:", this.props.QuestionPage)
   }
   onFormSubmit(event) {
     event.preventDefault();
@@ -22,31 +24,50 @@ class QuestionPage extends Component {
       submitAnswer(answer);
     }
   }
-  onSelect(event) {
+
+  sleepFor(ms){
+    var now = new Date().getTime();
+    while(new Date().getTime() < now + ms){ /* do nothing */ }
+  }
+  onSelect(event, value) {
     event.preventDefault();
-    console.log("Radio Select:", event);
+    this.setState({answer: value});
+    console.log("Radio Select:", value);
   }
 
   render() {
     let {ready, disable, categories, questions, nextQuestion} = this.props;
-    let {answer, data} = this.state;
+    let {answer, data, toggle} = this.state;
     let noSelection = (answer == "");
+
     let buttons = data.map(q => {
-        return (
-          <Radio key={q.name} name="multiChoice" type="radio" value={q.name}> {q.value} </Radio>
-        );
+      let selected = (answer == q.name);
+      let img_src = "/images/unselected.png";
+      if (selected) {
+        img_src = "/images/selected.png";
+      }
+      return (
+        <div key={q.name} className="radio">
+          <label key={q.name} >
+            <Button key={q.name} bsStyle="link" bsSize="xsmall" propType="radio" name="multipleChoice"
+                   onClick={event => this.onSelect(event, q.name)} value={q.name}>
+              <Image src={img_src} height="24" width="24"  />
+            </Button>
+            {q.value}
+          </label>
+        </div>
+      );
     });
-    console.log("Answer =", answer);
-    //onChange={event => this.onSelect(event)}
 
     return (
       <form onSubmit={event => this.onFormSubmit(event)}>
-        <Panel bsStyle="primary" header="Fruit Question" className="form-group">
-          <div className="radio">
+        <Panel bsStyle="primary" header="Fruit Question">
+          <div className="form-group">
+            <label className="control-label">Select the best answer</label>
             {buttons}
-           </div>
-          <br/>
-          <Button bsStyle="primary" type="submit" disabled={disable || noSelection}>Submit</Button>
+            <br/>
+            <Button bsStyle="primary" type="submit" disabled={disable || noSelection}>Submit</Button>
+          </div>
         </Panel>
       </form>);
   }
