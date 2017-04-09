@@ -3,39 +3,51 @@ import {Panel, Button} from 'react-bootstrap';
 
 class StartPage extends Component {
 
+  // Default message until server connects
+  componentDidMount() {
+    this.body = (
+      <Panel header="Quiz not available">
+        <div className="panel-body fixed-panel">Waiting for connection to server...</div>
+        <div className="panel-footer"></div>
+      </Panel>
+    );
+  }
+
+  // Summarize quiz details once connected
+  onReady() {
+    let {ready, disable, categories, questions} = this.props;
+    return (
+      <Panel bsStyle="primary" header="Quiz Details">
+        <div className="panel-body fixed-panel">
+          <h3><ul>
+            <li>Questions: {questions}</li>
+            <br/>
+            <li>Categories: {categories}</li>
+          </ul></h3>
+        </div>
+        <div className="panel-footer">
+          <Button bsStyle="primary" disabled={disable}
+                  onClick={event => this.onBegin(event)}>Begin Quiz</Button>
+        </div>
+      </Panel>
+    );
+  }
+
+  // If we want a quiz timer, add it here
   onBegin(event) {
     event.preventDefault();
     let {setAppState} = this.props;
     setAppState({began: true, currentQ: 1});
-    console.log("Start button pressed");
+    console.log("[Begin Quiz]");
   }
-  
+
   render() {
-    let {ready, disable, categories, questions} = this.props;
-    let body = (
-      <Panel header="Waiting for connection to server">
-        <div>
-          <br/>
-          <br/>
-          <br/>
-          <br/>
-        </div>
-      </Panel>
-    );
-    if (ready) {
-      body = (
-        <Panel bsStyle="primary" header="Quiz Details">
-          <ul>
-            <li><strong>Questions</strong>: {questions}</li>
-            <li><strong>Categories</strong>: {categories}</li>
-          </ul>
-          <Button bsStyle="primary" disabled={disable} onClick={event => this.onBegin(event)}>Begin</Button>
-        </Panel>
-      );
+    if (this.props.ready) {
+      this.body = this.onReady();
     }
     return (
       <div>
-        {body}
+        {this.body}
       </div>);
   }
 }

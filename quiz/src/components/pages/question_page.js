@@ -61,11 +61,13 @@ class QuestionPage extends Component {
 
     return (
       <form onSubmit={event => this.onFormSubmit(event)}>
-        <Panel bsStyle="primary" header="Fruit Question">
-          <div className="form-group">
+        <Panel className="form-group" bsStyle="primary" header="Fruit Question">
+          <div className="panel-body fixed-panel">
             <label className="control-label">Select the best answer</label>
             {buttons}
             <br/>
+          </div>
+          <div className="panel-footer">
             <Button bsStyle="primary" type="submit" disabled={disable || noSelection}>Submit</Button>
           </div>
         </Panel>

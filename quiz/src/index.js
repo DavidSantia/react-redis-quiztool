@@ -6,7 +6,7 @@ import QuestionPage from './components/pages/question_page';
 import Footer from './components/footer/main'
 import Socket from './socket';
 
-class App extends Component {
+class QuizTool extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -130,4 +130,4 @@ class App extends Component {
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<QuizTool />, document.getElementById('root'));

@@ -1,13 +1,17 @@
+body, input {
+  font-size: 24px;
+}
+
+.btn:focus {
+  outline: none !important;
+}
+
 .footer-container {
   background-color: #ededed;
   padding-top: 3px;
   padding-bottom: 3px;
 }
 
-.btn:focus {
-   outline: none !important;
-}
-
-body, input {
-  font-size: 24px;
+.fixed-panel {
+  min-height: 400px;
 }
