@@ -2,8 +2,17 @@ import React, {Component} from 'react';
 import {Panel, Button} from 'react-bootstrap';
 
 class StartPage extends Component {
+
+  onBegin(event) {
+    event.preventDefault();
+    let {setAppState} = this.props;
+    
+    setAppState({began: true});
+    console.log("Start button pressed");
+  }
+  
   render() {
-    let {ready, disable, categories, questions, startQuiz} = this.props;
+    let {ready, disable, categories, questions} = this.props;
     let body = (
       <Panel header="Waiting for connection to server">
         <div>
@@ -18,10 +27,10 @@ class StartPage extends Component {
       body = (
         <Panel bsStyle="primary" header="Quiz Details">
           <ul>
-            <li><strong>Categories</strong>: {categories}</li>
             <li><strong>Questions</strong>: {questions}</li>
+            <li><strong>Categories</strong>: {categories}</li>
           </ul>
-          <Button bsStyle="primary" disabled={disable} onClick={startQuiz}>Begin</Button>
+          <Button bsStyle="primary" disabled={disable} onClick={event => this.onBegin(event)}>Begin</Button>
         </Panel>
       );
     }
@@ -37,7 +46,7 @@ StartPage.propTypes = {
   disable: React.PropTypes.bool.isRequired,
   categories: React.PropTypes.string.isRequired,
   questions: React.PropTypes.string.isRequired,
-  startQuiz: React.PropTypes.func.isRequired
+  setAppState: React.PropTypes.func.isRequired
 }
 
 export default StartPage

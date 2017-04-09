@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {PageHeader} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
-import StartPage from './components/start_page/main';
+import StartPage from './components/pages/start_page';
+import QuestionPage from './components/pages/question_page';
 import Footer from './components/footer/main'
 import Socket from './socket';
 
@@ -9,12 +10,14 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      ready: false,
       connected: false,
+      ready: false,
+      began: false,
       quizId: 1,
       title: "",
       categories: "",
       questions: "",
+      currentQ: 0,
       quizData: {},
       showModal: false
     };
@@ -55,29 +58,63 @@ class App extends Component {
       console.log("Got Reply: ", data);
     }
   }
-  startQuiz() {
-    console.log("Start button pressed");
-  }
   onError(data) {
     console.log("Got Error:", data);
   }
+  setAppState(data) {
+    console.log("In set App state: ", data);
+    this.setState(data);
+  }
+
+  getQuestionNumber() {
+    let {ready, currentQ, questions} = this.state;
+    if (currentQ > 0 && parseInt(questions, 10) > 0 && ready) {
+      return "Question " + String(currentQ) + " of " + questions;
+    }
+    return "";
+  }
+  submitAnswer(answer) {
+    let q = this.state.currentQ;
+    q = q + 1;
+    if (q < parseInt(this.state.questions, 10)) {
+      this.setState({currentQ: q});
+    }
+    console.log("Submitted answer: ", answer);
+  }
 
   render() {
-    let {title, ready, connected} = this.state;
+    let {title, connected, ready, began} = this.state;
+    // Set header and footer
     let header = title + " Quiz";
+    let footer_text = this.getQuestionNumber();
     if (!ready) {
       header = "Welcome to QuizTool";
+      footer_text = "";
+    }
+    // Set start or question page
+    let page = "";
+    if (began) {
+      page = (
+        <QuestionPage
+          {...this.state}
+          disable={!connected}
+          submitAnswer={(answer) => this.submitAnswer(answer)} />
+      );
+    } else {
+      page = (
+        <StartPage
+          {...this.state}
+          disable={!connected}
+          setAppState={data => this.setAppState(data)}/>
+      );
     }
     return (
       <div className="app">
         <div className="row">
           <div className="col-sm-12">
             <PageHeader>{header}</PageHeader>
-            <StartPage
-              {...this.state}
-              disable={!connected}
-              startQuiz={() => this.startQuiz()} />
-            <Footer connected={connected} />
+            {page}
+            <Footer connected={connected} text={footer_text} />
           </div>
         </div>
       </div>

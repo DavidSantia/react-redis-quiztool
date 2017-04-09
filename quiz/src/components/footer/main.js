@@ -3,18 +3,19 @@ import {Image} from 'react-bootstrap';
 
 class Footer extends Component {
   render() {
-    let {connected} = this.props;
+    let {connected, text} = this.props;
     let img_src = "/images/disconnected.png";
-    let text = " Not";
+    let status = " Not Connected";
     if (connected) {
-      text = "";
+      status = " Connected to Server";
       img_src = "/images/connected.png";
     }
     return (
       <div className="footer navbar-default navbar-fixed-bottom">
         <div className="container-fluid footer-container">
 	        <Image src={img_src} height="24" width="24" rounded />
-          {text} Connected to Server
+          {status}
+          <span className="pull-right">{text}</span>
         </div>
       </div>);
   }
