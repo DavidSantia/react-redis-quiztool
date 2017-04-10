@@ -1,21 +1,20 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import {Panel, Button} from 'react-bootstrap';
+import Footer from './components/footer/main';
 import Socket from './socket';
 
 class QuizRoutes extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      connected: false,
-      ready: false,
       routes: {
-        '/default': () => this.default(),
-        '/quiz/:quizId/details': (quizId) => this.details(quizId),
-        '/quiz/:quizId/:questionId': (quizId, questionId) => this.viewPage(quizId, questionId)
+        '/default': () => props.defaultPage(),
+        '/quiz/:quizId/details': (quizId) => props.quizDetails(quizId),
+        '/quiz/:quizId/:qNum': (quizId, qNum) => props.questionPage(quizId, qNum)
       },
-      quizId: 1,
-      data: {}
+      data: {},
+      currentQ: 0,
+      done: false
     };
 
     // Initialize router
@@ -24,16 +23,6 @@ class QuizRoutes extends Component {
 
     // Initialize Redis to send and receive commands
     this.socket = new Socket();
-  }
-
-  default () {
-    console.log("Default page");
-  }
-  details(quizId) {
-    console.log("Details for Quiz", quizId);
-  }
-  viewPage(quizId, questionId) {
-    console.log("viewPage Quiz:", quizId, " Question: " + questionId);
   }
 
   componentDidMount() {
@@ -49,21 +38,28 @@ class QuizRoutes extends Component {
     console.log("Connecting to Redis server");
     this.socket.send("PING", null);
   }
+  setConnected() {
+    console.log("Redis server Ready");
+    this.props.setRootState({connected: true});
+  }
   onDisconnect() {
     console.log("Connection closed");
-    this.setState({connected: false});
+    this.props.setRootState({connected: false});
   }
   onSuccess(data) {
+    let quizId = 1;
     if (data == "PONG") {
       // Server replied to PING, so is connected
-      console.log("Redis server Ready");
-      this.setState({connected: true});
+      this.setConnected();
+
       // Request quiz meta-data
-      this.socket.send("HGETALL", "quiz:" + this.state.quizId);
+      this.socket.send("HGETALL", "quiz:" + quizId);
     } else if (data.title != null) {
-      // Got quiz meta-data, so quiz is ready
-      this.setState(data);
-      this.setState({ready: true});
+      // Got quiz meta-data
+      this.props.setRootState(data);
+
+      // Display quiz details start page
+      this.props.quizDetails(quizId);
     } else {
       console.log("Got Reply: ", data);
     }
@@ -71,53 +67,86 @@ class QuizRoutes extends Component {
   onError(data) {
     console.log("Got Error:", data);
   }
-  setAppState(data) {
-    console.log("In set App state: ", data);
-    this.setState(data);
+
+  getQuestionNumber() {
+    let {questions} = this.props;
+    let {currentQ, done} = this.state;
+    if (done) {
+      return "Finished Quiz";
+    }
+    if (currentQ > 0 && parseInt(questions, 10) > 0) {
+      return "Question " + String(currentQ) + " of " + questions;
+    }
+    return "";
+  }
+
+  incrementPage() {
+    let {questions} = this.props;
+    let q = this.state.currentQ;
+    q = q + 1;
+
+    if (q <= parseInt(questions, 10)) {
+      this.setState({currentQ: q});
+    } else {
+      this.setState({done: true});
+      console.log("Done with quiz");
+      return;
+    }
   }
 
   render() {
-    let {connected, ready, routes} = this.state;
-    let ctext = "false"; if (connected) {ctext = "true";}
-    let rtext = "false"; if (ready) {rtext = "true";}
+    let footer_text = this.getQuestionNumber();
 
-    let page = (
-      <ul>
-        <li>Connected: {ctext}</li>
-        <li>Ready: {rtext}</li>
-      </ul>
-    );
-
-    let list = [];
-    let i = 1;
-    for (var route in routes) {
-      let url = route.replace(/:[a-zA-Z]+/g, "1");
-      url = url.replace(/^\//i, "#/");
-      let k = "route" + String(i);
-      list.push(
-        <li key={k}>{k}: <a key={k} href={url}>{route}</a></li>
-      );
-      i++;
-    }
-    // list.push(<User key={id} id={id} name={users[id]} {...this.props} />);
-
-
-    return (
-      <div className="app">
-        <div className="row">
-          <div className="col-sm-12">
-            <h4>Status</h4>
-            {page}
-            <br/>
-            <h4>Route test links</h4>
-            <ul>
-              {list}
-            </ul>
-          </div>
-        </div>
-      </div>
+    return(
+      <Footer connected={this.props.connected} text={footer_text} />
     );
   }
+  
+  //render() {
+  //   let {connected, ready, routes} = this.state;
+  //   let ctext = "false"; if (connected) {ctext = "true";}
+  //   let rtext = "false"; if (ready) {rtext = "true";}
+  //
+  //   let page = (
+  //     <ul>
+  //       <li>Connected: {ctext}</li>
+  //       <li>Ready: {rtext}</li>
+  //     </ul>
+  //   );
+  //
+  //   let list = [];
+  //   let i = 1;
+  //   for (var route in routes) {
+  //     let url = route.replace(/:[a-zA-Z]+/g, "1");
+  //     url = url.replace(/^\//i, "#/");
+  //     let k = "route" + String(i);
+  //     list.push(
+  //       <li key={k}>{k}: <a key={k} href={url}>{route}</a></li>
+  //     );
+  //     i++;
+  //   }
+  //   list.push(<User key={id} id={id} name={users[id]} {...this.props} />);
+  //
+  //   return (
+  //     <div className="app">
+  //       <div className="row">
+  //         <div className="col-sm-12">
+  //          
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 }
 
-ReactDOM.render(<QuizRoutes />, document.getElementById('root'));
+QuizRoutes.propTypes = {
+  connected: React.PropTypes.bool.isRequired,
+  categories: React.PropTypes.string.isRequired,
+  questions: React.PropTypes.string.isRequired,
+  setRootState: React.PropTypes.func.isRequired,
+  defaultPage: React.PropTypes.func.isRequired,
+  quizDetails: React.PropTypes.func.isRequired,
+  questionPage: React.PropTypes.func.isRequired
+}
+
+export default QuizRoutes;

@@ -8,14 +8,49 @@ class QuestionPage extends Component {
       answer: "",
       selected: false,
       toggle: true,
-      data: [
+      category: "Favorites",
+      correctAnswers: "",
+      question: "What is your favorite fruit?",
+      newData: {
+        "Category": "Terminology",
+        "CorrectAnswers": "2",
+        "Question": "What is the scientific study of plant life?",
+        "A1": "Dryad Science",
+        "A2": "Botany",
+        "A3": "Nutrition",
+        "A4": "Greenery",
+        "A5": "Plantology"
+      },
+      multipleChoice: [
         {name: "q1", value: "Apple"},
         {name: "q2", value: "Orange"},
         {name: "q3", value: "Watermelon"}
       ]
     }
-    console.log("Questions:", this.props.QuestionPage)
   }
+
+  // onComponentDidMount(){
+  //   let {newData} = this.state;
+  //   let multipleChoice = [];
+  //
+  //   // Gather category, question, correct answer, and multiple choices
+  //   for (var k in newData) {
+  //     if (newData.hasOwnProperty(k)) {
+  //       if (k == "Category") {
+  //         this.setState({category: newData[k]});
+  //       } else if (k == "CorrectAnswers") {
+  //         this.setState({correctAnswers: newData[k]});
+  //       } else if (k == "Question") {
+  //         this.setState({question: newData[k]});
+  //       } else {
+  //         multipleChoice.push({name: k, value: newData[k]});
+  //       }
+  //     }
+  //     this.setState({multipleChoice});
+  //     console.log("State is:", this.state);
+  //   }
+  // }
+  
   onFormSubmit(event) {
     event.preventDefault();
     let {submitAnswer} = this.props;
@@ -25,10 +60,6 @@ class QuestionPage extends Component {
     }
   }
 
-  sleepFor(ms){
-    var now = new Date().getTime();
-    while(new Date().getTime() < now + ms){ /* do nothing */ }
-  }
   onSelect(event, value) {
     event.preventDefault();
     this.setState({answer: value});
@@ -36,11 +67,12 @@ class QuestionPage extends Component {
   }
 
   render() {
-    let {ready, disable, categories, questions, nextQuestion} = this.props;
-    let {answer, data, toggle} = this.state;
-    let noSelection = (answer == "");
+    let {ready, connected, categories, questions, nextQuestion} = this.props;
+    let {answer, multipleChoice, category, question} = this.state;
+    let disabled = (!connected || answer == "");
 
-    let buttons = data.map(q => {
+    // Generate multiple-choice radio buttons
+    let buttons = multipleChoice.map(q => {
       let selected = (answer == q.name);
       let img_src = "/images/unselected.png";
       if (selected) {
@@ -61,14 +93,14 @@ class QuestionPage extends Component {
 
     return (
       <form onSubmit={event => this.onFormSubmit(event)}>
-        <Panel className="form-group" bsStyle="primary" header="Fruit Question">
+        <Panel className="form-group" bsStyle="primary" header={category}>
           <div className="panel-body fixed-panel">
-            <label className="control-label">Select the best answer</label>
+            <label className="control-label">{question}</label>
             {buttons}
             <br/>
           </div>
           <div className="panel-footer">
-            <Button bsStyle="primary" type="submit" disabled={disable || noSelection}>Submit</Button>
+            <Button bsStyle="primary" type="submit" disabled={disabled}>Submit</Button>
           </div>
         </Panel>
       </form>);
@@ -76,8 +108,7 @@ class QuestionPage extends Component {
 }
 
 QuestionPage.propTypes = {
-  ready: React.PropTypes.bool.isRequired,
-  disable: React.PropTypes.bool.isRequired,
+  connected: React.PropTypes.bool.isRequired,
   categories: React.PropTypes.string.isRequired,
   questions: React.PropTypes.string.isRequired,
   submitAnswer: React.PropTypes.func.isRequired
