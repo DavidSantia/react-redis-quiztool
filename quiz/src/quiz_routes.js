@@ -9,18 +9,17 @@ class QuizRoutes extends Component {
     this.state = {
       connected: false,
       ready: false,
+      routes: {
+        '/default': () => this.default(),
+        '/quiz/:quizId/details': (quizId) => this.details(quizId),
+        '/quiz/:quizId/:questionId': (quizId, questionId) => this.viewPage(quizId, questionId)
+      },
       quizId: 1,
       data: {}
     };
 
-    this.routes = {
-      '/default': () => this.default(),
-      '/quiz/:quizId:/details': (quizId) => this.details(quizId),
-      '/quiz/:quizId:/:questionId': (quizId, questionId) => this.viewPage(quizId, questionId)
-    };
-
     // Initialize router
-    this.router = Router(this.routes);
+    this.router = Router(this.state.routes);
     this.router.init();
 
     // Initialize Redis to send and receive commands
@@ -78,7 +77,7 @@ class QuizRoutes extends Component {
   }
 
   render() {
-    let {connected, ready} = this.state;
+    let {connected, ready, routes} = this.state;
     let ctext = "false"; if (connected) {ctext = "true";}
     let rtext = "false"; if (ready) {rtext = "true";}
 
@@ -89,6 +88,20 @@ class QuizRoutes extends Component {
       </ul>
     );
 
+    let list = [];
+    let i = 1;
+    for (var route in routes) {
+      let url = route.replace(/:[a-zA-Z]+/g, "1");
+      url = url.replace(/^\//i, "#/");
+      let k = "route" + String(i);
+      list.push(
+        <li key={k}>{k}: <a key={k} href={url}>{route}</a></li>
+      );
+      i++;
+    }
+    // list.push(<User key={id} id={id} name={users[id]} {...this.props} />);
+
+
     return (
       <div className="app">
         <div className="row">
@@ -98,9 +111,7 @@ class QuizRoutes extends Component {
             <br/>
             <h4>Route test links</h4>
             <ul>
-              <li><a href="#/default">#/default</a></li>
-              <li><a href="#/quiz/1/details">#/quiz/1/details</a></li>
-              <li><a href="#/quiz/1/1">#/quiz/1/1</a></li>
+              {list}
             </ul>
           </div>
         </div>
