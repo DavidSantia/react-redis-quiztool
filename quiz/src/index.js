@@ -10,8 +10,6 @@ class QuizTool extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      header: "Welcome to QuizTool",
-      currentPage: "Loading...",
       connected: false,
       began: false,
       quizId: 0,
@@ -21,35 +19,38 @@ class QuizTool extends Component {
       quizData: {},
       showModal: false
     };
+    this.currentPage = "Loading...";
+    this.header = "Welcome to QuizTool";
   }
   componentDidMount() {
     this.defaultPage();
   }
 
+  // The following Page hooks get called by client router
   defaultPage() {
     console.log("Default page");
-    this.setState({currentPage: (<DefaultPage />)});
+    this.currentPage = (<DefaultPage />);
+    this.forceUpdate();
   }
-  quizDetails(quizId) {
-    let header = this.state.title + " Quiz";
-    this.setState({header, quizId});
+  quizDetailsPage(quizId) {
+    this.header = this.state.title + " Quiz";
     console.log("Details Page for Quiz", quizId);
-    let currentPage = (
+    this.currentPage = (
       <StartPage
         {...this.state}
         setRootState={data => this.setRootState(data)}
         questionPage={(quizId, qNum) => this.questionPage(quizId, qNum)}/>
     );
-    this.setState({currentPage});
+    this.forceUpdate();
   }
   questionPage(quizId, qNum) {
     console.log("viewPage Quiz:", quizId, " Question:" + qNum);
-    let currentPage = (
+    this.currentPage = (
       <QuestionPage
         {...this.state}
         submitAnswer={(answer) => this.submitAnswer(answer)}/>
     );
-    this.setState({currentPage});
+    this.forceUpdate();
   }
   
   submitAnswer(answer) {
@@ -62,18 +63,17 @@ class QuizTool extends Component {
   }
 
   render() {
-    let {header, currentPage} = this.state;
     return (
       <div className="app">
         <div className="row">
           <div className="col-sm-12">
-            <PageHeader>{header}</PageHeader>
-            {currentPage}
+            <PageHeader>{this.header}</PageHeader>
+            {this.currentPage}
             <QuizRoutes
               {...this.state}
               setRootState={(data) => this.setRootState(data)}
               defaultPage={() => this.defaultPage()}
-              quizDetails={(id) => this.quizDetails(id)}
+              quizDetailsPage={(id) => this.quizDetailsPage(id)}
               questionPage={(id, qNum) => this.questionPage(id, qNum)}/>
           </div>
         </div>

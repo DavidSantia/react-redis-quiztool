@@ -9,7 +9,7 @@ class QuizRoutes extends Component {
     this.state = {
       routes: {
         '/default': () => props.defaultPage(),
-        '/quiz/:quizId/details': (quizId) => props.quizDetails(quizId),
+        '/quiz/:quizId/details': (quizId) => props.quizDetailsPage(quizId),
         '/quiz/:quizId/:qNum': (quizId, qNum) => props.questionPage(quizId, qNum)
       },
       data: {},
@@ -18,7 +18,8 @@ class QuizRoutes extends Component {
     };
 
     // Initialize router
-    this.router = Router(this.state.routes);
+    let options = {notfound: () => props.defaultPage()};
+    this.router = Router(this.state.routes).configure(options);
     this.router.init();
 
     // Initialize Redis to send and receive commands
@@ -38,10 +39,10 @@ class QuizRoutes extends Component {
   
   dumpRoutes() {
     console.log("Available routes:");
+    let base = window.location.href.split("#")[0];
     for (var route in this.state.routes) {
       let url = route.replace(/:[a-zA-Z]+/g, "1");
-      url = url.replace(/^\//i, "#/");
-      console.log("• " + window.location.href + url);
+      console.log("• " + base + "#" + url);
     }
   }
 
@@ -69,8 +70,8 @@ class QuizRoutes extends Component {
       // Got quiz meta-data
       this.props.setRootState(data);
 
-      // Display quiz details start page
-      this.props.quizDetails(quizId);
+      // Display quiz details page
+      this.props.quizDetailsPage(quizId);
     } else {
       console.log("Got Reply: ", data);
     }
@@ -120,7 +121,7 @@ QuizRoutes.propTypes = {
   questions: React.PropTypes.string.isRequired,
   setRootState: React.PropTypes.func.isRequired,
   defaultPage: React.PropTypes.func.isRequired,
-  quizDetails: React.PropTypes.func.isRequired,
+  quizDetailsPage: React.PropTypes.func.isRequired,
   questionPage: React.PropTypes.func.isRequired
 }
 
