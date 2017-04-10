@@ -29,27 +29,26 @@ class QuestionPage extends Component {
     }
   }
 
-  // onComponentDidMount(){
-  //   let {newData} = this.state;
-  //   let multipleChoice = [];
-  //
-  //   // Gather category, question, correct answer, and multiple choices
-  //   for (var k in newData) {
-  //     if (newData.hasOwnProperty(k)) {
-  //       if (k == "Category") {
-  //         this.setState({category: newData[k]});
-  //       } else if (k == "CorrectAnswers") {
-  //         this.setState({correctAnswers: newData[k]});
-  //       } else if (k == "Question") {
-  //         this.setState({question: newData[k]});
-  //       } else {
-  //         multipleChoice.push({name: k, value: newData[k]});
-  //       }
-  //     }
-  //     this.setState({multipleChoice});
-  //     console.log("State is:", this.state);
-  //   }
-  // }
+  componentDidMount(){
+    let {newData} = this.state;
+    let multipleChoice = [];
+
+    // Gather category, question, correct answer, and multiple choices
+    for (var k in newData) {
+      if (newData.hasOwnProperty(k)) {
+        if (k == "Category") {
+          this.setState({category: newData[k]});
+        } else if (k == "CorrectAnswers") {
+          this.setState({correctAnswers: newData[k]});
+        } else if (k == "Question") {
+          this.setState({question: newData[k]});
+        } else {
+          multipleChoice.push({name: k, value: newData[k]});
+        }
+      }
+      this.setState({multipleChoice});
+    }
+  }
   
   onFormSubmit(event) {
     event.preventDefault();

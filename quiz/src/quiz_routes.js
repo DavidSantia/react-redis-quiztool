@@ -101,42 +101,6 @@ class QuizRoutes extends Component {
       <Footer connected={this.props.connected} text={footer_text} />
     );
   }
-  
-  //render() {
-  //   let {connected, ready, routes} = this.state;
-  //   let ctext = "false"; if (connected) {ctext = "true";}
-  //   let rtext = "false"; if (ready) {rtext = "true";}
-  //
-  //   let page = (
-  //     <ul>
-  //       <li>Connected: {ctext}</li>
-  //       <li>Ready: {rtext}</li>
-  //     </ul>
-  //   );
-  //
-  //   let list = [];
-  //   let i = 1;
-  //   for (var route in routes) {
-  //     let url = route.replace(/:[a-zA-Z]+/g, "1");
-  //     url = url.replace(/^\//i, "#/");
-  //     let k = "route" + String(i);
-  //     list.push(
-  //       <li key={k}>{k}: <a key={k} href={url}>{route}</a></li>
-  //     );
-  //     i++;
-  //   }
-  //   list.push(<User key={id} id={id} name={users[id]} {...this.props} />);
-  //
-  //   return (
-  //     <div className="app">
-  //       <div className="row">
-  //         <div className="col-sm-12">
-  //          
-  //         </div>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 }
 
 QuizRoutes.propTypes = {
