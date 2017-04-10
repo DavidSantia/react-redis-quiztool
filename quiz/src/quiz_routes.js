@@ -26,12 +26,23 @@ class QuizRoutes extends Component {
   }
 
   componentDidMount() {
+    this.dumpRoutes();
+
     // Route Redis responses
     this.socket.on("success", (data) => this.onSuccess(data));
     this.socket.on("error", (data) => this.onError(data));
     // Route internal actions
     this.socket.on("connect", () => this.onConnect());
     this.socket.on("disconnect", () => this.onDisconnect());
+  }
+  
+  dumpRoutes() {
+    console.log("Available routes:");
+    for (var route in this.state.routes) {
+      let url = route.replace(/:[a-zA-Z]+/g, "1");
+      url = url.replace(/^\//i, "#/");
+      console.log("• " + window.location.href + url);
+    }
   }
 
   onConnect() {

@@ -11,7 +11,7 @@ class QuizTool extends Component {
     super(props);
     this.state = {
       header: "Welcome to QuizTool",
-      currentPage: (<DefaultPage />),
+      currentPage: "Loading...",
       connected: false,
       began: false,
       quizId: 0,
