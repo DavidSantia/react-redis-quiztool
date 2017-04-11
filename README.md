@@ -20,10 +20,9 @@ This demo also assumes you have [Docker](https://www.docker.com/) installed, and
 
 I wanted to create a simple React/JS app that presents a quiz.  I also wanted to serve the data from Redis, and keep things simple and fast by connecting Redis directly to the browser.
 
-When I first researched this, I found various NodeJS modules that interface with Redis; however, these are all server side implementations. Since Redis uses a TCP socket, browsers don't let you interface directly. Security concerns have kept TCP sockets out of browsers. (Although Chrome does have a socket library, the keep things secure by only allowing it in packaged apps, where address restrictions can be specified in their manifest.)
+When I first researched this, I found various NodeJS modules that interface with Redis; however, these are all server side implementations. Since Redis uses a TCP socket, browsers don't let you interface directly. Security concerns have kept TCP sockets out of browsers. (Although Chrome does have a socket library, it keeps things secure by only allowing sockets in packaged apps, where restrictions can be specified in their manifest.)
 
-So I created a light-weight adaptor ([redis-ws/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/redis-ws/main.go)) to copy onto the Redis container, providing a websocket interface.
-
+So I created a light-weight adaptor ([redis-ws/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/redis-ws/main.go)) to copy onto the Redis container, providing a websocket interface. I also created a separate load app on a second container, that loads quiz data and then exits.  The overall architecture is as follows:
 ![Figure 1: Architecture](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/README-Architecture.png)
 
 ## How to Run the example load app
@@ -66,5 +65,5 @@ A sample plant quiz CSV is included.  To develop your own loader app, start with
 
 1. Make a directory for your project
 2. Use the [plant-quiz.csv](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/plant-quiz.csv) as an example for how to format your quiz.
-3. Create a main.go that calls New, ConnectDatastore, Parse, MapRecords, and StoreQuiz.
+3. Create a main.go that calls New, ConnectRedis, Parse, MapRecords, and StoreQuiz.
 

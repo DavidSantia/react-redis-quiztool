@@ -17,6 +17,7 @@ class QuizTool extends Component {
       title: "",
       categories: "0",
       questions: "0",
+
       showModal: false
     };
     this.currentPage = "Loading...";
@@ -73,6 +74,39 @@ class QuizTool extends Component {
     this.setState(data);
   }
 
+  onConnect() {
+    console.log("Connecting to Redis server");
+    this.socket.send("PING", null);
+  }
+  onDisconnect() {
+    console.log("Connection closed");
+    this.setState({connected: false});
+  }
+
+  gotConnected() {
+    console.log("Redis server Ready");
+    this.setState({connected: true});
+
+    this.socket.send("HGETALL", "quiz:" + this.state.quizId);
+  }
+
+  onSuccess(data) {
+    if (data == "PONG") {
+      // Server replied to PING, so is ready
+      this.gotConnected();
+    } else if (data.title != null) {
+      // Server replied to HGETALL for quiz meta-data, so set in state
+      this.setState(data)
+    } else {
+      console.log("Got Reply: ", data);
+    }
+  }
+  
+  onError(data) {
+    console.log("Got Error:", data);
+  }
+
+
   render() {
     return (
       <div className="app">
@@ -96,3 +130,4 @@ class QuizTool extends Component {
 }
 
 ReactDOM.render(<QuizTool />, document.getElementById('root'));
+
