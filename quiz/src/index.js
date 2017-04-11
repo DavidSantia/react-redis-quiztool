@@ -1,33 +1,77 @@
 import React, { Component } from 'react';
+import {PageHeader} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
+import DefaultPage from './components/pages/default_page';
+import FinishPage from './components/pages/finish_page';
+import StartPage from './components/pages/start_page';
+import QuestionPage from './components/pages/question_page';
+import QuizRoutes from './quiz_routes'
 import Socket from './socket';
 
-
-class App extends Component {
+class QuizTool extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      quizId: 1,
+      began: false,
+      quizId: "1",
       title: "",
-      questions: 0,
-      categories: 0,
-      quizData: {},
-      connected: false,
+      categories: "0",
+      questions: "0",
+
       showModal: false
     };
+    this.currentPage = "Loading...";
+    this.header = "Welcome to QuizTool";
+
+    // Initialize websocket for Redis
+    this.socket = new Socket();
+  }
+  componentDidMount() {
+    this.defaultPage();
   }
 
-  // This section communicates handles the Redis connection
-  componentDidMount() {
-    let socket = this.socket = new Socket();
+  // The following Page hooks get called by client router
+  defaultPage() {
+    console.log("[defaultPage]");
+    this.currentPage = (<DefaultPage />);
+    this.forceUpdate();
+  }
+  quizDetailsPage(quizId) {
+    this.header = this.state.title + " Quiz";
+    console.log("[quizDetailsPage] quiz:", quizId);
+    this.currentPage = (
+      <StartPage
+        {...this.state}
+        setRootState={data => this.setRootState(data)}
+        questionPage={(quizId, qNum) => this.questionPage(quizId, qNum)}/>
+    );
+    this.forceUpdate();
+  }
+  questionPage(quizId, qNum) {
+    console.log("[questionPage] quiz:", quizId, " question:" + qNum);
+    this.currentPage = (
+      <QuestionPage
+        {...this.state}
+        totalQs={this.state.questions}
+        socket={this.socket}
+        submitAnswer={(answer) => this.submitAnswer(answer)}
+        finishPage={() => this.finishPage()}/>
+    );
+    this.forceUpdate();
+  }
+  finishPage() {
+    console.log("[finishPage]");
+    this.currentPage = (<FinishPage />);
+    this.forceUpdate();
+  }
+  
+  submitAnswer(answer) {
+    console.log("[Submitted answer: " + answer +"]");
+  }
 
-    // Route Redis responses
-    socket.on("success", (data) => this.onSuccess(data));
-    socket.on("error", (data) => this.onError(data));
-
-    // Route internal actions
-    socket.on("connect", () => this.onConnect());
-    socket.on("disconnect", () => this.onDisconnect());
+  setRootState(data) {
+    //console.log("Set root state: ", data);
+    this.setState(data);
   }
 
   onConnect() {
@@ -67,10 +111,17 @@ class App extends Component {
     return (
       <div className="app">
         <div className="row">
-          <div className="col-md-3">
-            <h2>{this.state.title}</h2>
-            <p>Categories: {this.state.categories}</p>
-            <p>Questions: {this.state.questions}</p>
+          <div className="col-sm-12">
+            <PageHeader>{this.header}</PageHeader>
+            {this.currentPage}
+            <QuizRoutes
+              {...this.state}
+              socket={this.socket}
+              totalQs={this.state.questions}
+              setRootState={(data) => this.setRootState(data)}
+              defaultPage={() => this.defaultPage()}
+              quizDetailsPage={(id) => this.quizDetailsPage(id)}
+              questionPage={(id, qNum) => this.questionPage(id, qNum)}/>
           </div>
         </div>
       </div>
@@ -78,4 +129,5 @@ class App extends Component {
   }
 }
 
-ReactDOM.render(<App />, document.getElementById('root'));
+ReactDOM.render(<QuizTool />, document.getElementById('root'));
+

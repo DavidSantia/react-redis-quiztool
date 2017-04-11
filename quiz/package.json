@@ -11,6 +11,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "react": "^0.14.7",
+    "react-bootstrap": "^0.30.8",
     "react-dom": "^0.14.7"
   },
   "devDependencies": {

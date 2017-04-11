@@ -1,11 +1,10 @@
 import {EventEmitter} from 'events';
 
-
-// Handle passing command and data to and from Redis
+// Connection to Redis Websocket
 class Socket {
-  constructor(ws = new WebSocket('ws://localhost:4000'), ee = new EventEmitter()) {
-    this.ws = ws;
-    this.ee = ee;
+  constructor() {
+    let ws = this.ws = new WebSocket('ws://localhost:4000');
+    this.ee = new EventEmitter();
     ws.onmessage = event => this.message(event);
     ws.onopen = event => this.open(event);
     ws.onclose = event => this.close(event);
@@ -38,6 +37,10 @@ class Socket {
   on(name, fn) {
     // Route message from the server
     this.ee.on(name, fn);
+  }
+  removeAll(name) {
+    // Remove routes
+    this.ee.removeAllListeners(name);
   }
 }
 
