@@ -14,7 +14,7 @@ class StartPage extends Component {
 
   // Summarize quiz details once connected
   render() {
-    let {ready, connected, categories, questions} = this.props;
+    let {ready, categories, questions} = this.props;
     return (
       <Panel bsStyle="primary" header="Quiz Details">
         <div className="panel-body fixed-panel">
@@ -25,7 +25,7 @@ class StartPage extends Component {
           </ul></h3>
         </div>
         <div className="panel-footer">
-          <Button bsStyle="primary" disabled={!connected}
+          <Button bsStyle="primary" disabled={questions == "0"}
                   onClick={event => this.onBegin(event)}>Begin Quiz</Button>
         </div>
       </Panel>
@@ -34,8 +34,7 @@ class StartPage extends Component {
 }
 
 StartPage.propTypes = {
-  connected: React.PropTypes.bool.isRequired,
-  quizId: React.PropTypes.number.isRequired,
+  quizId: React.PropTypes.string.isRequired,
   categories: React.PropTypes.string.isRequired,
   questions: React.PropTypes.string.isRequired,
   setRootState: React.PropTypes.func.isRequired,

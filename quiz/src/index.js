@@ -2,25 +2,28 @@ import React, { Component } from 'react';
 import {PageHeader} from 'react-bootstrap';
 import ReactDOM from 'react-dom';
 import DefaultPage from './components/pages/default_page';
+import FinishPage from './components/pages/finish_page';
 import StartPage from './components/pages/start_page';
 import QuestionPage from './components/pages/question_page';
 import QuizRoutes from './quiz_routes'
+import Socket from './socket';
 
 class QuizTool extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      connected: false,
       began: false,
-      quizId: 0,
+      quizId: "1",
       title: "",
       categories: "0",
       questions: "0",
-      quizData: {},
       showModal: false
     };
     this.currentPage = "Loading...";
     this.header = "Welcome to QuizTool";
+
+    // Initialize websocket for Redis
+    this.socket = new Socket();
   }
   componentDidMount() {
     this.defaultPage();
@@ -28,13 +31,13 @@ class QuizTool extends Component {
 
   // The following Page hooks get called by client router
   defaultPage() {
-    console.log("Default page");
+    console.log("[defaultPage]");
     this.currentPage = (<DefaultPage />);
     this.forceUpdate();
   }
   quizDetailsPage(quizId) {
     this.header = this.state.title + " Quiz";
-    console.log("Details Page for Quiz", quizId);
+    console.log("[quizDetailsPage] quiz:", quizId);
     this.currentPage = (
       <StartPage
         {...this.state}
@@ -44,17 +47,25 @@ class QuizTool extends Component {
     this.forceUpdate();
   }
   questionPage(quizId, qNum) {
-    console.log("viewPage Quiz:", quizId, " Question:" + qNum);
+    console.log("[questionPage] quiz:", quizId, " question:" + qNum);
     this.currentPage = (
       <QuestionPage
         {...this.state}
-        submitAnswer={(answer) => this.submitAnswer(answer)}/>
+        totalQs={this.state.questions}
+        socket={this.socket}
+        submitAnswer={(answer) => this.submitAnswer(answer)}
+        finishPage={() => this.finishPage()}/>
     );
+    this.forceUpdate();
+  }
+  finishPage() {
+    console.log("[finishPage]");
+    this.currentPage = (<FinishPage />);
     this.forceUpdate();
   }
   
   submitAnswer(answer) {
-    console.log("Submitted answer: ", answer);
+    console.log("[Submitted answer: " + answer +"]");
   }
 
   setRootState(data) {
@@ -71,6 +82,8 @@ class QuizTool extends Component {
             {this.currentPage}
             <QuizRoutes
               {...this.state}
+              socket={this.socket}
+              totalQs={this.state.questions}
               setRootState={(data) => this.setRootState(data)}
               defaultPage={() => this.defaultPage()}
               quizDetailsPage={(id) => this.quizDetailsPage(id)}

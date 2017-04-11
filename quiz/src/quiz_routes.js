@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import {Panel, Button} from 'react-bootstrap';
 import Footer from './components/footer/main';
-import Socket from './socket';
 
 class QuizRoutes extends Component {
   constructor(props) {
@@ -13,8 +12,7 @@ class QuizRoutes extends Component {
         '/quiz/:quizId/:qNum': (quizId, qNum) => props.questionPage(quizId, qNum)
       },
       data: {},
-      currentQ: 0,
-      done: false
+      currentQ: 0
     };
 
     // Initialize router
@@ -22,19 +20,20 @@ class QuizRoutes extends Component {
     this.router = Router(this.state.routes).configure(options);
     this.router.init();
 
-    // Initialize Redis to send and receive commands
-    this.socket = new Socket();
+    console.log("Setting socket");
+
   }
 
   componentDidMount() {
     this.dumpRoutes();
+    let {socket} = this.props;
 
     // Route Redis responses
-    this.socket.on("success", (data) => this.onSuccess(data));
-    this.socket.on("error", (data) => this.onError(data));
+    socket.on("success", (data) => this.handleInit(data));
+    socket.on("error", (data) => this.onError(data));
     // Route internal actions
-    this.socket.on("connect", () => this.onConnect());
-    this.socket.on("disconnect", () => this.onDisconnect());
+    socket.on("connect", () => this.onConnect());
+    socket.on("disconnect", () => this.onDisconnect());
   }
   
   dumpRoutes() {
@@ -47,25 +46,27 @@ class QuizRoutes extends Component {
   }
 
   onConnect() {
-    console.log("Connecting to Redis server");
-    this.socket.send("PING", null);
-  }
-  setConnected() {
-    console.log("Redis server Ready");
-    this.props.setRootState({connected: true});
+    let {socket} = this.props;
+    console.log("[Connecting to server]");
+    socket.send("PING", null);
   }
   onDisconnect() {
     console.log("Connection closed");
-    this.props.setRootState({connected: false});
+    this.props.setRootState({questions: "0"});
   }
-  onSuccess(data) {
-    let quizId = 1;
+  onError(data) {
+    console.log("Got Error:", data);
+  }
+
+  handleInit(data) {
+    let {socket} = this.props;
+    let quizId = "1";
     if (data == "PONG") {
       // Server replied to PING, so is connected
-      this.setConnected();
+      console.log("[Redis server Ready]");
 
       // Request quiz meta-data
-      this.socket.send("HGETALL", "quiz:" + quizId);
+      socket.send("HGETALL", "quiz:" + quizId);
     } else if (data.title != null) {
       // Got quiz meta-data
       this.props.setRootState(data);
@@ -73,52 +74,29 @@ class QuizRoutes extends Component {
       // Display quiz details page
       this.props.quizDetailsPage(quizId);
     } else {
-      console.log("Got Reply: ", data);
-    }
-  }
-  onError(data) {
-    console.log("Got Error:", data);
-  }
-
-  getQuestionNumber() {
-    let {questions} = this.props;
-    let {currentQ, done} = this.state;
-    if (done) {
-      return "Finished Quiz";
-    }
-    if (currentQ > 0 && parseInt(questions, 10) > 0) {
-      return "Question " + String(currentQ) + " of " + questions;
-    }
-    return "";
-  }
-
-  incrementPage() {
-    let {questions} = this.props;
-    let q = this.state.currentQ;
-    q = q + 1;
-
-    if (q <= parseInt(questions, 10)) {
-      this.setState({currentQ: q});
-    } else {
-      this.setState({done: true});
-      console.log("Done with quiz");
-      return;
+      console.log("Error, unexpected: ", data);
     }
   }
 
   render() {
-    let footer_text = this.getQuestionNumber();
+    let {questions} = this.props;
+    let connected = (questions != "0");
+    
+    let footer_text = "";
+    if (connected) {
+      footer_text = "Total Questions: " + questions;
+    }
 
     return(
-      <Footer connected={this.props.connected} text={footer_text} />
+      <Footer connected={connected} text={footer_text} />
     );
   }
 }
 
 QuizRoutes.propTypes = {
-  connected: React.PropTypes.bool.isRequired,
   categories: React.PropTypes.string.isRequired,
-  questions: React.PropTypes.string.isRequired,
+  totalQs: React.PropTypes.string.isRequired,
+  socket: React.PropTypes.object.isRequired,
   setRootState: React.PropTypes.func.isRequired,
   defaultPage: React.PropTypes.func.isRequired,
   quizDetailsPage: React.PropTypes.func.isRequired,

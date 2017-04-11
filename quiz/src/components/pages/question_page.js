@@ -7,71 +7,153 @@ class QuestionPage extends Component {
     this.state = {
       answer: "",
       selected: false,
-      toggle: true,
-      category: "Favorites",
-      correctAnswers: "",
-      question: "What is your favorite fruit?",
-      newData: {
-        "Category": "Terminology",
-        "CorrectAnswers": "2",
-        "Question": "What is the scientific study of plant life?",
-        "A1": "Dryad Science",
-        "A2": "Botany",
-        "A3": "Nutrition",
-        "A4": "Greenery",
-        "A5": "Plantology"
-      },
-      multipleChoice: [
-        {name: "q1", value: "Apple"},
-        {name: "q2", value: "Orange"},
-        {name: "q3", value: "Watermelon"}
-      ]
+      done: false,
+      category: "Connection Issue",
+      questions: "0",
+      correctA: "",
+      question: "Waiting for server...",
+      currC: 0,
+      currQ: 0,
+      mulChoice: []
     }
   }
 
-  componentDidMount(){
-    let {newData} = this.state;
-    let multipleChoice = [];
+  componentDidMount() {
+    let {totalQs, quizId, socket} = this.props;
+    if (totalQs == "0") {
+      return;
+    }
 
-    // Gather category, question, correct answer, and multiple choices
-    for (var k in newData) {
-      if (newData.hasOwnProperty(k)) {
+    // Initialize for first question
+    this.setState({currQ: 1});
+
+    // Get first category
+    this.incrementCategory();
+  }
+
+  incrementCategory() {
+    let {quizId, categories, socket, finishPage} = this.props;
+    let {currC} = this.state;
+
+    // Clear previous route
+    socket.removeAll("success");
+    currC++;
+    if (currC <= categories) {
+      // Request category info
+      socket.on("success", (data) => this.getCategory(data));
+      this.setState({currC, currQ: 1});
+      socket.send("HGETALL", "quiz:" + quizId + ":c:" + currC);
+    } else {
+      this.setState({done: true});
+      console.log("DEBUG Done with Quiz");
+      finishPage();
+    }
+  }
+
+  getCategory(data) {
+    let {quizId, socket} = this.props;
+    let {currC} = this.state;
+    console.log("DEBUG Category: " + data["category"]);
+    this.setState(data);
+
+    // Clear category route
+    socket.removeAll("success");
+
+    // Request first question
+    socket.on("success", (data) => this.getQuestion(data));
+    this.setState({currQ: 1});
+    socket.send("HGETALL", "quiz:" + quizId + ":c:" + currC + ":q:1");
+  }
+
+  // Question sample data
+  // data = {
+  //    "Category": "Terminology",
+  //    "CorrectAnswers": "2",
+  //    "Question": "What is the scientific study of plant life?",
+  //    "A1": "Dryad Science",
+  //    "A2": "Botany"
+  //  };
+
+  getQuestion(data) {
+    let {questions, currQ, category} = this.state;
+    let correctA = "";
+    let question = "";
+    let mulChoice = [];
+    console.log("DEBUG Displaying", currQ, "of", questions, "in Category '" + category +"'");
+
+    if (currQ <= questions) {
+      // Extract category, question, correct answer, and multiple choices
+      for (var k in data) {
         if (k == "Category") {
-          this.setState({category: newData[k]});
+          // redundant field
         } else if (k == "CorrectAnswers") {
-          this.setState({correctAnswers: newData[k]});
+          correctA = data[k];
         } else if (k == "Question") {
-          this.setState({question: newData[k]});
+          question = data[k];
         } else {
-          multipleChoice.push({name: k, value: newData[k]});
+          mulChoice.push({name: k, value: data[k]});
         }
       }
-      this.setState({multipleChoice});
-    }
-  }
-  
-  onFormSubmit(event) {
-    event.preventDefault();
-    let {submitAnswer} = this.props;
-    let {answer} = this.state;
-    if (answer != "") {
-      submitAnswer(answer);
+      console.log("DEBUG Question: " + question);
+      this.setState({correctA, question, mulChoice});
+    } else {
+      console.log("Error: Unexpected state");
     }
   }
 
   onSelect(event, value) {
     event.preventDefault();
     this.setState({answer: value});
-    console.log("Radio Select:", value);
+    //console.log("Radio Select:", value);
   }
 
+  onFormSubmit(event) {
+    event.preventDefault();
+    let {submitAnswer} = this.props;
+    let {answer} = this.state;
+    if (answer != "") {
+      submitAnswer(answer);
+      // Clear response after submitting
+      this.setState({answer: ""});
+      this.incrementQuestion();
+    }
+  }
+
+  incrementQuestion() {
+    let {quizId, socket} = this.props;
+    let {currC, currQ, questions} = this.state;
+    currQ++;
+
+    if (currQ <= questions) {
+      this.setState({currQ});
+      socket.send("HGETALL", "quiz:" + quizId + ":c:" + currC + ":q:" + currQ);
+    } else {
+      console.log("DEBUG Finished Category");
+      this.incrementCategory();
+    }
+  }
+
+  getFooterText() {
+    let {totalQs} = this.props;
+    let {currQ, questions, done} = this.state;
+    if (done) {
+      return "Finished Quiz";
+    }
+    if (currQ > 0 && questions > 0) {
+      return "Question " + String(currQ) + " of " + questions;
+    }
+    return "";
+  }
+
+
   render() {
-    let {ready, connected, categories, questions, nextQuestion} = this.props;
-    let {answer, multipleChoice, category, question} = this.state;
-    let disabled = (!connected || answer == "");
+    let {ready, categories, totalQs, nextQuestion} = this.props;
+    let {answer, mulChoice, category, question} = this.state;
+    let disabled = (totalQs == "0" || answer == "");
+    let footer_text = this.getFooterText();
 
     // Generate multiple-choice radio buttons
-    let buttons = multipleChoice.map(q => {
+    let buttons = mulChoice.map(q => {
       let selected = (answer == q.name);
       let img_src = "/images/unselected.png";
       if (selected) {
@@ -99,7 +181,10 @@ class QuestionPage extends Component {
             <br/>
           </div>
           <div className="panel-footer">
-            <Button bsStyle="primary" type="submit" disabled={disabled}>Submit</Button>
+            <div className="btn btn-outline" disabled>{footer_text}</div>
+            <span className="pull-right">
+              <Button bsStyle="primary" type="submit" disabled={disabled}>Submit</Button>
+            </span>
           </div>
         </Panel>
       </form>);
@@ -107,10 +192,12 @@ class QuestionPage extends Component {
 }
 
 QuestionPage.propTypes = {
-  connected: React.PropTypes.bool.isRequired,
+  quizId: React.PropTypes.string.isRequired,
   categories: React.PropTypes.string.isRequired,
-  questions: React.PropTypes.string.isRequired,
-  submitAnswer: React.PropTypes.func.isRequired
+  totalQs: React.PropTypes.string.isRequired,
+  socket: React.PropTypes.object.isRequired,
+  submitAnswer: React.PropTypes.func.isRequired,
+  finishPage: React.PropTypes.func.isRequired
 }
 
 export default QuestionPage;

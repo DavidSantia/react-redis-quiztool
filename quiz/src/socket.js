@@ -38,6 +38,10 @@ class Socket {
     // Route message from the server
     this.ee.on(name, fn);
   }
+  removeAll(name) {
+    // Remove routes
+    this.ee.removeAllListeners(name);
+  }
 }
 
 export default Socket;
