@@ -10,6 +10,7 @@ npm start
 ```
 This example assumes you have docker-compose running in the parent directory, i.e.:
 ```sh
+./build.sh
 docker-compose up
 ```
 
