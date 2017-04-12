@@ -1,5 +1,5 @@
 FROM scratch
 
-COPY load /
+COPY load.tar /
 
 ENTRYPOINT ["/load"]
