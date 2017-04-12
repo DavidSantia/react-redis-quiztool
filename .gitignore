@@ -1,4 +1,6 @@
 .idea
 load/load
+load/load.tar
 redis-ws/redis-ws
+redis-ws/redis-ws.tar
 quiz/node_modules
