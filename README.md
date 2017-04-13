@@ -97,7 +97,7 @@ Get the meta-data for Quiz 1
 {"command":"HGETALL", "data":"quiz:1"}
 ```
 
-Get the number of questions in Category 2 for Quiz 1
+Get the number of questions in Quiz 1, Category 2
 ```json
 {"command":"HGET", "data":"quiz:1:c:2 questions"}
 ```
