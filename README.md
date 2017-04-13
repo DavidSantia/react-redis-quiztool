@@ -5,7 +5,7 @@ To use this Quiz Tool demo, start with:
 ```sh
 go get github.com/DavidSantia/react-redis-quiztool
 ```
-This downloads the react-redis-quiztool, along with its dependencies:
+This downloads the quiztool package, along with its dependencies:
 
 * [github.com/garyburd/redigo](https://github.com/garyburd/redigo) package, (c) Gary Burd
 * [github.com//gorilla/websocket](https://github.com/gorilla/websocket) package, (c) Gorillatoolkit.org
