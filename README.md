@@ -4,13 +4,11 @@
 To use this Quiz Tool demo, start with:
 ```sh
 go get github.com/DavidSantia/react-redis-quiztool
-go get github.com/garyburd/redigo/redis
-go get github.com/gorilla/websocket
 ```
-As you can see above, it uses
+This downloads the react-redis-quiztool, along with its dependencies:
 
-* [garyburd/redigo](https://github.com/garyburd/redigo) package, (c) Gary Burd
-* [gorilla/websocket](https://github.com/gorilla/websocket) package, (c) Gorillatoolkit.org
+* [github.com/garyburd/redigo](https://github.com/garyburd/redigo) package, (c) Gary Burd
+* [github.com//gorilla/websocket](https://github.com/gorilla/websocket) package, (c) Gorillatoolkit.org
 
 This demo also assumes you have [Docker](https://www.docker.com/) installed, and uses
 
