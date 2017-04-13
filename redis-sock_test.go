@@ -6,26 +6,26 @@ import (
 	"testing"
 )
 
-var qzt *QuizApp
+var qzt2 *QuizApp
 
 func TestConnect(t *testing.T) {
 	var err error
 
 	// debug: 0 = off, 1 = on, 2 = verbose
 	var debug int = 1
-	qzt = New(debug)
+	qzt2 = New(debug)
 
 	// Connect Test
-	err = qzt.ConnectRedisSocket()
+	err = qzt2.ConnectRedisSocket()
 	if err != nil {
-		t.Errorf("Expected new quiztool, got: %v\n", err)
+		t.Errorf("Expected new RedisSocket, got: %v\n", err)
 	}
 }
 
 func TestCommandsThatFail(t *testing.T) {
 	var err error
 	var data string
-	wsc := qzt.wsclient
+	wsc := qzt2.wsclient
 
 	// Tests the returned errors
 
@@ -68,7 +68,7 @@ func TestCommandsThatFail(t *testing.T) {
 func TestCommandsThatPass(t *testing.T) {
 	var err error
 	var data string
-	wsc := qzt.wsclient
+	wsc := qzt2.wsclient
 
 	// Passing Tests
 
