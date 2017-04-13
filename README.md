@@ -60,6 +60,11 @@ This launches
 
 It also mounts the [data](https://github.com/DavidSantia/react-redis-quiztool/blob/master/data) directory on the Load container, so that the app can access the CSV files.
 
+## Running the React app
+
+To run the React app, first launch the system as explained above.
+Then in a separate terminal, go to the [quiz](https://github.com/DavidSantia/react-redis-quiztool/blob/master/quiz) directory and follow the README.
+
 ## Developing your own Loader
 A sample plant quiz CSV is included.  To develop your own loader app, start with a CSV file containing your quiz data.
 
@@ -67,3 +72,33 @@ A sample plant quiz CSV is included.  To develop your own loader app, start with
 2. Use the [plant-quiz.csv](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/plant-quiz.csv) as an example for how to format your quiz.
 3. Create a main.go that calls New, ConnectRedis, Parse, MapRecords, and StoreQuiz.
 
+## Troubleshooting the Redis Websocket
+
+Launching the whole system loads the sample data into Redis. If you want to test out the Redis Websocket by itself, naviage to a test page such as [websocket.org -> Demos -> Echo Test](http://websocket.org/echo.html).  From here, connect to Redis as follows:
+
+* Make sure the "Use secure WebSocket (TLS)" box is unchecked
+* Enter the address "ws://localhost:4000"
+
+You should see "CONNECTED" in the Log, as shown.
+![Figure 2: Debugging Websocket](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/README-DebugWS.png)
+
+Reaplace the default Message. Use a JSON struct with "command" and "data" fields as follows:
+
+* The field "command" should contain a Redis command as found on [redis.io/commands](https://redis.io/commands)
+* The field "data" is a string containing the arguments to the command
+
+### Examples:
+
+Get the meta-data for Quiz 1
+```json
+{"command":"HGETALL", "data":"quiz:1"}
+```
+
+Get the number of questions in Category 2 for Quiz 1
+```json
+{"command":"HGET", "data":"quiz:1:c:2 questions"}
+```
+
+## Contributors
+
+* [DavidSantia](https://github.com/DavidSantia)
