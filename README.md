@@ -74,10 +74,13 @@ A sample plant quiz CSV is included.  To develop your own loader app, start with
 
 ## Troubleshooting the Redis Websocket
 
-Launching the whole system loads the sample data into Redis. If you want to test out the Redis Websocket by itself, naviage to a test page such as [websocket.org -> Demos -> Echo Test](http://websocket.org/echo.html).  From here, connect to Redis as follows:
+Launching the whole system loads the sample data into Redis. If you want to test out the Redis Websocket by itself, naviage to a test page such as [websocket.org -> Demos -> Echo Test](http://websocket.org/echo.html).
+
+From here, connect to Redis as follows:
 
 * Make sure the "Use secure WebSocket (TLS)" box is unchecked
 * Enter the address "ws://localhost:4000"
+* Press Connect
 
 You should see "CONNECTED" in the Log, as shown.
 ![Figure 2: Debugging Websocket](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/README-DebugWS.png)
