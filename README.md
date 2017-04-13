@@ -8,7 +8,7 @@ go get github.com/DavidSantia/react-redis-quiztool
 This downloads the quiztool package, along with its dependencies:
 
 * [github.com/garyburd/redigo](https://github.com/garyburd/redigo) package, (c) Gary Burd
-* [github.com//gorilla/websocket](https://github.com/gorilla/websocket) package, (c) Gorillatoolkit.org
+* [github.com/gorilla/websocket](https://github.com/gorilla/websocket) package, (c) Gorillatoolkit.org
 
 This demo also assumes you have [Docker](https://www.docker.com/) installed, and uses
 
