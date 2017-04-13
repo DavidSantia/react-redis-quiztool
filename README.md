@@ -85,7 +85,7 @@ From here, connect to Redis as follows:
 You should see "CONNECTED" in the Log, as shown.
 ![Figure 2: Debugging Websocket](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/README-DebugWS.png)
 
-Reaplace the default Message. Use a JSON struct with "command" and "data" fields as follows:
+Reaplace the default Message. Use a JSON struct with *command* and *data* fields as follows:
 
 * The field "command" should contain a Redis command as found on [redis.io/commands](https://redis.io/commands)
 * The field "data" is a string containing the arguments to the command
