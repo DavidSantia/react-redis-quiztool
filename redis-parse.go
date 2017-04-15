@@ -105,26 +105,30 @@ func (wrp *Wrapper) ParseBuf() (s string, err error) {
 	return
 }
 
-func (wrp *Wrapper) GetArray() (s string, err error) {
+func (wrp *Wrapper) GetKeyPairOrArray() (s string, err error) {
+	var method = "Array"
+	if wrp.keyPair {
+		method = "KeyPair"
+	}
 	if wrp.Debug {
-		log.Printf("VERBOSE GetArray processing: %q\n", wrp.buf[wrp.bufPtr:wrp.bufLen])
+		log.Printf("VERBOSE Get%s processing: %q\n", method, wrp.buf[wrp.bufPtr:wrp.bufLen])
 	}
 
 	// Locate size
 	i := wrp.bufPtr
 	if !wrp.NextLF() {
-		err = fmt.Errorf("Array EOLN not found: %s", wrp.buf[wrp.bufPtr:wrp.bufLen])
+		err = fmt.Errorf("Get%s EOLN not found: %s", method, wrp.buf[wrp.bufPtr:wrp.bufLen])
 		return
 	}
 	l, err := strconv.Atoi(string(wrp.buf[i+1 : wrp.bufPtr-2]))
-	if l == -1 {
-		err = fmt.Errorf("%s Array not found", wrp.msg.Command)
+	if l == -1 || l == 0 {
+		err = fmt.Errorf("%s %s not found", wrp.msg.Command, method)
 		s = "null"
 		return
 	}
 
 	if wrp.Debug {
-		log.Printf("VERBOSE GetArray expected length %d\n", l)
+		log.Printf("VERBOSE Get%s expected length %d\n", method, l)
 	}
 
 	// Iterate through values
@@ -134,7 +138,7 @@ func (wrp *Wrapper) GetArray() (s string, err error) {
 	for a := 0; a < l; a++ {
 		// Make sure there are more entries to parse
 		if wrp.bufPtr == wrp.bufLen {
-			err = fmt.Errorf("Array expected length %d != actual length %d", l, a+1)
+			err = fmt.Errorf("Get%s expected length %d != actual length %d", method, l, a+1)
 			return
 		}
 		elem, err = wrp.ParseBuf()
@@ -167,7 +171,7 @@ func (wrp *Wrapper) GetArray() (s string, err error) {
 		s = data[:len(data)-1] + "]"
 	}
 	if wrp.Debug {
-		log.Printf("VERBOSE GetArray returned: %s\n", s)
+		log.Printf("VERBOSE Get%s returned: %s\n", method, s)
 	}
 	return
 }
@@ -188,7 +192,7 @@ func (wrp *Wrapper) ParseSocket() (data string, err error) {
 
 	// Check for Array
 	if resp_type == '*' {
-		data, err = wrp.GetArray()
+		data, err = wrp.GetKeyPairOrArray()
 		return
 	}
 
