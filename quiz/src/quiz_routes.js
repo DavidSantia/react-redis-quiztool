@@ -9,7 +9,6 @@ class QuizRoutes extends Component {
       routes: {
         '/default': () => props.defaultPage(),
         '/quiz/:quizId/details': (quizId) => props.quizDetailsPage(quizId),
-        '/quiz/question/next': () => props.quizDetailsPage(quizId),
         '/quiz/:quizId/:qNum': (quizId, qNum) => props.questionPage(quizId, qNum)
       },
       data: {},
