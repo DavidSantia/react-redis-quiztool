@@ -20,7 +20,7 @@ I wanted to create a simple React/JS app that presents a quiz.  I also wanted to
 
 When I first researched this, I found various NodeJS modules that interface with Redis; however, these are all server side implementations. Since Redis uses a TCP socket, browsers don't let you interface directly. Security concerns have kept TCP sockets out of browsers. (Although Chrome does have a socket library, it keeps things secure by only allowing sockets in packaged apps, where restrictions can be specified in their manifest.)
 
-So I created a light-weight adaptor ([redis-ws/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/redis-ws/main.go)) to copy onto the Redis container, providing a websocket interface. I also created a separate load app on a second container, that loads quiz data and then exits.  The overall architecture is as follows:
+So I created a light-weight adaptor ([redis-ws/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/redis-ws/main.go)) to copy onto the Redis container, providing a WebSocket interface. I also created a separate load app on a second container, that loads quiz data and then exits.  The overall architecture is as follows:
 ![Figure 1: Architecture](https://raw.githubusercontent.com/DavidSantia/react-redis-quiztool/master/README-Architecture.png)
 
 ## How to Run the example load app
@@ -29,7 +29,7 @@ An example Load app ([load/main.go](https://github.com/DavidSantia/react-redis-q
 ### Running locally
 To run this app, first you need to launch a Redis container.  The following maps the port Redis uses to localhost:
 ```sh
-docker run -it --rm --name redis -p 6379:6379 redis:alpine
+docker run --rm --name redis -p 6379:6379 redis:alpine
 ```
 This will run on the terminal (until you type Ctrl-C)
 
@@ -53,15 +53,16 @@ docker-compose up
 ```
 This launches
 
-1. The Redis server (with websocket adaptor) container, as a dependency to the load app
+1. The Redis server (with Websocket adaptor) container, as a dependency to the load app
 2. The Load app container
 
 It also mounts the [data](https://github.com/DavidSantia/react-redis-quiztool/blob/master/data) directory on the Load container, so that the app can access the CSV files.
 
 ## Running the React app
 
-To run the React app, first launch the system as explained above.
-Then in a separate terminal, go to the [quiz](https://github.com/DavidSantia/react-redis-quiztool/blob/master/quiz) directory and follow the README.
+The React app uses a Redis container with the WebSocket adaptor attached.  This is built and launched in as explained in the section above.
+
+Once launched, use a separate terminal, go to the [quiz](https://github.com/DavidSantia/react-redis-quiztool/blob/master/quiz) directory and follow the README.
 
 ## Developing your own Loader
 A sample plant quiz CSV is included.  To develop your own loader app, start with a CSV file containing your quiz data.
@@ -85,7 +86,7 @@ You should see "CONNECTED" in the Log, as shown.
 
 Replace the default Message. Use a JSON struct with **command** and **data** fields as follows:
 
-* The field "command" should contain a Redis command as found on [redis.io/commands](https://redis.io/commands)
+* The field "command" should contain a Redis command, as found on [redis.io/commands](https://redis.io/commands)
 * The field "data" is a string containing the arguments to the command
 
 ### Examples:
