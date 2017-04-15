@@ -39,7 +39,7 @@ go run load/main.go
 ```
 
 ### Deploying the load app in a container
-Next we will run the whole system in Docker. To do this, first stop the currently running Redis by typing Ctrl-C on its terminal.  Then, build the load app:
+Next, we will run the whole system in Docker. To do this, first stop the currently running Redis by typing Ctrl-C on its terminal.  Then, build the load app:
 ```sh
 ./build.sh
 ```
