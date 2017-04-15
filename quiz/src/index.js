@@ -15,6 +15,7 @@ class QuizTool extends Component {
       began: false,
       quizId: "1",
       title: "",
+      totalCorrect: 0,
       categories: "0",
       questions: "0"
     };
@@ -59,11 +60,19 @@ class QuizTool extends Component {
   }
   finishPage() {
     console.log("[finishPage]");
-    this.currentPage = (<FinishPage />);
+    let {totalCorrect, questions} = this.state;
+    let text = (<ul>
+        <h4><li>You answered {totalCorrect} out of {questions} questions correctly</li></h4>
+      </ul>);
+    this.currentPage = (<FinishPage text={text} />);
     this.forceUpdate();
   }
   
   submitAnswer(answer, correctA) {
+    let {totalCorrect} = this.state;
+    if (answer == correctA) {
+      this.setState({totalCorrect: totalCorrect + 1});
+    }
     console.log("[Submitted answer: " + answer +", Correct answer: " + correctA + "]");
   }
 
