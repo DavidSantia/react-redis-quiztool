@@ -27,7 +27,7 @@ So I created a light-weight adaptor ([redis-ws/main.go](https://github.com/David
 An example Load app ([load/main.go](https://github.com/DavidSantia/react-redis-quiztool/blob/master/load/main.go)) that stores the CSV data in Redis is provided.
 
 ### Running locally
-To run this app, first you need to launch a Redis container.  The following maps the port Redis uses to localhost:
+To run this app, first you need to launch a Redis container.  At this point the standard Redis container will do.  The following maps the port Redis uses to localhost:
 ```sh
 docker run --rm --name redis -p 6379:6379 redis:alpine
 ```
@@ -38,12 +38,12 @@ On another terminal, run the load app as follows:
 go run load/main.go
 ```
 
-### Deploying the app in a container
+### Deploying the load app in a container
 Next we will run the whole system in Docker. To do this, first stop the currently running Redis by typing Ctrl-C on its terminal.  Then, build the load app:
 ```sh
 ./build.sh
 ```
-This script builds the two Go executables, and deploys them onto their containers with **docker-compose build**
+This script builds two Go executables, the load app and the adaptor.  It then deploys these executables onto docker images via **docker-compose build**.
 
 ## Launching the whole system
 
