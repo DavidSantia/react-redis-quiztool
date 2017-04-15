@@ -13,7 +13,7 @@ class Socket {
     const payload = event.data;
     try {
       const msg = JSON.parse(payload);
-      console.log("DEBUG Received from Redis: ", payload);
+      //console.log("DEBUG Received from Redis: ", payload);
       this.ee.emit(msg.command, msg.data);
     }
     catch(err) {
@@ -31,7 +31,7 @@ class Socket {
     // Send message to the server
     const msg = {command: name, data: data};
     const payload = JSON.stringify(msg);
-    console.log("DEBUG Sending to Redis: ", payload);
+    //console.log("DEBUG Sending to Redis: ", payload);
     this.ws.send(payload);
   }
   on(name, fn) {

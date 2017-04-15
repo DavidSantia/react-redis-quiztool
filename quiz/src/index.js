@@ -16,9 +16,7 @@ class QuizTool extends Component {
       quizId: "1",
       title: "",
       categories: "0",
-      questions: "0",
-
-      showModal: false
+      questions: "0"
     };
     this.currentPage = "Loading...";
     this.header = "Welcome to QuizTool";
@@ -54,7 +52,7 @@ class QuizTool extends Component {
         {...this.state}
         totalQs={this.state.questions}
         socket={this.socket}
-        submitAnswer={(answer) => this.submitAnswer(answer)}
+        submitAnswer={(answer, correctA, text) => this.submitAnswer(answer, correctA, text)}
         finishPage={() => this.finishPage()}/>
     );
     this.forceUpdate();
@@ -65,8 +63,8 @@ class QuizTool extends Component {
     this.forceUpdate();
   }
   
-  submitAnswer(answer) {
-    console.log("[Submitted answer: " + answer +"]");
+  submitAnswer(answer, correctA) {
+    console.log("[Submitted answer: " + answer +", Correct answer: " + correctA + "]");
   }
 
   setRootState(data) {

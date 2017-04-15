@@ -1,16 +1,21 @@
 import React, {Component} from 'react';
 import {Panel, Button, Image} from 'react-bootstrap';
+import Answer from '../answer/answer';
 
 class QuestionPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
       answer: "",
+      modalText: (<br/>),
+      showModal: false,
       selected: false,
       done: false,
       category: "Connection Issue",
       questions: "0",
       correctA: "",
+      correctText: "",
+      explanation: "",
       question: "Waiting for server...",
       currC: 0,
       currQ: 0,
@@ -23,6 +28,7 @@ class QuestionPage extends Component {
     if (totalQs == "0") {
       return;
     }
+    socket.on("nextquestion", () => this.incrementQuestion());
 
     // Initialize for first question
     this.setState({currQ: 1});
@@ -45,7 +51,7 @@ class QuestionPage extends Component {
       socket.send("HGETALL", "quiz:" + quizId + ":c:" + currC);
     } else {
       this.setState({done: true});
-      console.log("DEBUG Done with Quiz");
+      console.log("[Completed Quiz]");
       finishPage();
     }
   }
@@ -53,7 +59,7 @@ class QuestionPage extends Component {
   getCategory(data) {
     let {quizId, socket} = this.props;
     let {currC} = this.state;
-    console.log("DEBUG Category: " + data["category"]);
+    //console.log("DEBUG Category: " + data["category"]);
     this.setState(data);
 
     // Clear category route
@@ -77,9 +83,11 @@ class QuestionPage extends Component {
   getQuestion(data) {
     let {questions, currQ, category} = this.state;
     let correctA = "";
+    let correctText = "";
     let question = "";
+    let explanation = "";
     let mulChoice = [];
-    console.log("DEBUG Displaying", currQ, "of", questions, "in Category '" + category +"'");
+    //console.log("DEBUG Displaying", currQ, "of", questions, "in Category '" + category +"'");
 
     if (currQ <= questions) {
       // Extract category, question, correct answer, and multiple choices
@@ -87,15 +95,23 @@ class QuestionPage extends Component {
         if (k == "Category") {
           // redundant field
         } else if (k == "CorrectAnswers") {
-          correctA = data[k];
+          correctA = "A" + data[k];
+        } else if (k == "Explanation") {
+          explanation = data[k];
         } else if (k == "Question") {
           question = data[k];
         } else {
           mulChoice.push({name: k, value: data[k]});
         }
       }
-      console.log("DEBUG Question: " + question);
-      this.setState({correctA, question, mulChoice});
+      // Second pass to lookup correct answer text
+      for (var k in data) {
+        if (k == correctA) {
+          correctText = data[k];
+        }
+      }
+      //console.log("DEBUG Question: " + question);
+      this.setState({correctA, correctText, explanation, question, mulChoice});
     } else {
       console.log("Error: Unexpected state");
     }
@@ -110,13 +126,25 @@ class QuestionPage extends Component {
   onFormSubmit(event) {
     event.preventDefault();
     let {submitAnswer} = this.props;
-    let {answer} = this.state;
+    let {answer, correctA, explanation} = this.state;
+    let text = (<div><h4 className="text-success">Correct</h4>
+          <p className="text-info">{explanation}</p></div>);
     if (answer != "") {
-      submitAnswer(answer);
-      // Clear response after submitting
-      this.setState({answer: ""});
-      this.incrementQuestion();
+      if (answer != correctA) {
+        text = (<div><h4 className="text-danger">Incorrect</h4>
+          <p>The correct answer is {this.state.correctText}</p>
+          <p className="text-info">{explanation}</p></div>);
+      }
+      submitAnswer(answer, correctA, text);
+
+      // Clear response after submitting, and show Modal
+      this.setState({answer: "", modalText: text, showModal: true});
     }
+  }
+
+  onNextQ() {
+    this.setState({showModal: false});
+    this.incrementQuestion();
   }
 
   incrementQuestion() {
@@ -128,7 +156,7 @@ class QuestionPage extends Component {
       this.setState({currQ});
       socket.send("HGETALL", "quiz:" + quizId + ":c:" + currC + ":q:" + currQ);
     } else {
-      console.log("DEBUG Finished Category");
+      //console.log("DEBUG Finished Category");
       this.incrementCategory();
     }
   }
@@ -173,21 +201,27 @@ class QuestionPage extends Component {
     });
 
     return (
-      <form onSubmit={event => this.onFormSubmit(event)}>
-        <Panel className="form-group" bsStyle="primary" header={category}>
-          <div className="panel-body fixed-panel">
-            <label className="control-label">{question}</label>
-            {buttons}
-            <br/>
-          </div>
-          <div className="panel-footer">
-            <div className="btn btn-outline" disabled>{footer_text}</div>
-            <span className="pull-right">
-              <Button bsStyle="primary" type="submit" disabled={disabled}>Submit</Button>
-            </span>
-          </div>
-        </Panel>
-      </form>);
+      <div>
+        <form onSubmit={event => this.onFormSubmit(event)}>
+          <Panel className="form-group" bsStyle="primary" header={category}>
+            <div className="panel-body fixed-panel">
+              <label className="control-label">{question}</label>
+              {buttons}
+              <br/>
+            </div>
+            <div className="panel-footer">
+              <div className="btn btn-outline" disabled>{footer_text}</div>
+              <span className="pull-right">
+                <Button bsStyle="primary" type="submit" disabled={disabled}>Submit</Button>
+              </span>
+            </div>
+          </Panel>
+        </form>
+        <Answer
+          show={this.state.showModal}
+          text={this.state.modalText}
+          nextQ={() => this.onNextQ()}/>
+      </div>);
   }
 }
 

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import {Panel, Button} from 'react-bootstrap';
-import Footer from './components/footer/main';
+import Footer from './components/footer/footer';
 
 class QuizRoutes extends Component {
   constructor(props) {
@@ -9,6 +9,7 @@ class QuizRoutes extends Component {
       routes: {
         '/default': () => props.defaultPage(),
         '/quiz/:quizId/details': (quizId) => props.quizDetailsPage(quizId),
+        '/quiz/question/next': () => props.quizDetailsPage(quizId),
         '/quiz/:quizId/:qNum': (quizId, qNum) => props.questionPage(quizId, qNum)
       },
       data: {},
@@ -21,7 +22,6 @@ class QuizRoutes extends Component {
     this.router.init();
 
     console.log("Setting socket");
-
   }
 
   componentDidMount() {
